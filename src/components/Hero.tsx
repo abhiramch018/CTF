@@ -3,6 +3,7 @@ import type { MotionRef } from "../hooks/useIntroController.ts";
 import type { SceneJourney } from "../hooks/useScrollJourney.ts";
 import { supportsWebGL } from "../lib/webgl.ts";
 import { PortalFallback } from "./PortalFallback.tsx";
+import { QuietControls } from "./QuietControls.tsx";
 import { RegisterButton } from "./RegisterButton.tsx";
 import { SceneErrorBoundary } from "./SceneErrorBoundary.tsx";
 
@@ -64,52 +65,64 @@ export function WorldStage({ motion, journey, active, reducedMotion, scrollLive 
 
 export function Hero({ settled, reducedMotion }: HeroProps) {
   return (
-    <section id="top" className="hero-sheet relative min-h-[100svh]">
+    <section id="top" className="chapter hero-sheet relative min-h-[100svh]">
+      <div className="chapter-stage">
       <div className="hero-scrim" aria-hidden="true" />
       <div className={`hero-copy ${settled ? "is-visible" : ""}`}>
-        <p className="type-meta text-cyan">00 / ACCESS GATE</p>
-        <p className="type-meta mt-3 text-neon">
-          KL UNIVERSITY × GOOGLE DEVELOPER GROUPS × WHITE HAT HACKERS
+        <p className="ghost-word ghost-word-hero" aria-hidden="true">
+          NOCTIS
         </p>
-        <h1 id="hero-title" tabIndex={-1} className="type-hero mt-5">
-          <span className="block">DEAD NOCTIS</span>
-          <span className="type-section mt-3 block text-neon">SEASON 01</span>
-          <span className="type-meta mt-4 block text-muted">CTF</span>
-        </h1>
-        <p className="type-kicker mt-5 max-w-xl">
-          NATIONAL-LEVEL CYBERSECURITY CAPTURE THE FLAG
-        </p>
-        <p className="terminal-line type-meta mt-3 text-neon">
-          <span>TX // CLASSIFIED CHANNEL OPEN</span>
-          <span className="terminal-caret" aria-hidden="true" />
-        </p>
-        <div className="mt-8 grid max-w-xl gap-4 sm:grid-cols-2">
-          <div className="border border-obsidian bg-void/70 p-4">
-            <p className="type-meta text-neon">06 DECEMBER 2026</p>
-            <p className="type-card mt-2">ONLINE QUALIFIER</p>
-            <p className="type-small mt-1">9 AM – 9 PM · 12 HOURS</p>
+        <div className="hero-stage">
+          <div className="hero-zone">
+            <p className="type-meta text-cyan">00 / ACCESS GATE</p>
+            <p className="type-meta mt-8 text-muted">CTF · S01</p>
+            <p className="type-small mt-3 max-w-[14rem] text-ink">
+              KL University × Google Developer Groups × White Hat Hackers
+            </p>
+            <p className="terminal-line type-meta mt-8 text-neon">
+              <span>CHANNEL OPEN</span>
+              <span className="terminal-caret" aria-hidden="true" />
+            </p>
+            <p className="type-small mt-3 max-w-[14rem]">Remote qualifier. Finals at KLEF, Vaddeswaram.</p>
+            <QuietControls />
           </div>
-          <div className="border border-obsidian bg-void/70 p-4">
-            <p className="type-meta text-neon">26–27 DECEMBER 2026</p>
-            <p className="type-card mt-2">OFFLINE FINALS</p>
-            <p className="type-small mt-1">KLEF CAMPUS</p>
+          <div className="hero-zone hero-zone-center">
+            <h1 id="hero-title" tabIndex={-1} className="hero-mark">
+              <span className="block">DEAD</span>
+              <span className="block">NOCTIS</span>
+            </h1>
+            <p className="type-meta mt-5 text-cyan">SEASON 01</p>
+            <p className="type-kicker mt-4 max-w-xl">NATIONAL-LEVEL CYBERSECURITY CAPTURE THE FLAG</p>
+            <ol className="mission-coords">
+              <li>
+                <span>06 DEC 2026</span>
+                <strong>QUALIFIER</strong>
+                <em>09:00–21:00 · 12H · REMOTE</em>
+              </li>
+              <li>
+                <span>26–27 DEC 2026</span>
+                <strong>FINALS</strong>
+                <em>10:00 26 DEC – 16:00 27 DEC · KLEF</em>
+              </li>
+            </ol>
+            <div className="hero-actions">
+              <RegisterButton>ENTER THE ARENA</RegisterButton>
+              <button
+                type="button"
+                className="btn-ghost"
+                data-cursor="open"
+                onClick={() =>
+                  document.getElementById("challenges")?.scrollIntoView({
+                    behavior: reducedMotion ? "auto" : "smooth",
+                  })
+                }
+              >
+                OPEN THE SECTORS
+              </button>
+            </div>
           </div>
         </div>
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-          <RegisterButton>ENTER THE ARENA</RegisterButton>
-          <button
-            type="button"
-            className="btn-ghost"
-            data-cursor="link"
-            onClick={() =>
-              document.getElementById("challenges")?.scrollIntoView({
-                behavior: reducedMotion ? "auto" : "smooth",
-              })
-            }
-          >
-            EXPLORE THE GRID
-          </button>
-        </div>
+      </div>
       </div>
     </section>
   );

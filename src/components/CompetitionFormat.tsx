@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { inr } from "../content/event.ts";
+import { GhostWord } from "./GhostWord.tsx";
 
 const qualifierPoints = [
   "6 December 2026",
@@ -45,8 +46,10 @@ export function CompetitionFormat() {
   const selected = checkpoints.find((item) => item.id === active) ?? checkpoints[1];
 
   return (
-    <section id="competition" className="sheet sheet-forest scroll-mt-24 border-t border-obsidian px-5 py-20 md:px-8 md:py-28">
-      <div className="mx-auto max-w-6xl">
+    <section id="competition" className="chapter sheet sheet-forest scroll-mt-24 border-t border-obsidian px-5 py-20 md:px-8 md:py-28">
+      <div className="chapter-stage">
+      <GhostWord>PROTOCOL</GhostWord>
+      <div className="section-copy mx-auto max-w-6xl">
         <p className="type-meta text-cyan">03 / THE PROTOCOL</p>
         <h2 className="type-section mt-3 max-w-3xl">TWO DIMENSIONS. ONE CHALLENGE.</h2>
         <div className="mission-map mt-8" role="tablist" aria-label="Competition stages">
@@ -67,7 +70,7 @@ export function CompetitionFormat() {
           {selected.detail}
         </p>
         <div className="mt-10 flex flex-col gap-4 md:flex-row md:items-stretch">
-          <article className="terminal-panel reveal flex-1 border border-obsidian p-6" data-cursor="explore">
+          <article className="terminal-panel reveal flex-1 border border-obsidian p-6" data-cursor="inspect">
             <p className="type-meta text-muted">DIMENSION 01</p>
             <h3 className="type-subhead mt-2">ONLINE QUALIFIER</h3>
             <ul className="type-small mt-5 space-y-2 text-ink">
@@ -90,7 +93,7 @@ export function CompetitionFormat() {
               </span>
             ))}
           </div>
-          <article className="terminal-panel reveal reveal-delay-2 flex-1 border border-neon/40 p-6" data-cursor="explore">
+          <article className="terminal-panel reveal reveal-delay-2 flex-1 border border-neon/40 p-6" data-cursor="inspect">
             <p className="type-meta text-neon">DIMENSION 02</p>
             <h3 className="type-subhead mt-2">OFFLINE FINALS</h3>
             <ul className="type-small mt-5 space-y-2 text-ink">
@@ -108,6 +111,7 @@ export function CompetitionFormat() {
           are published before registration opens. Finalists are named on 8 December 2026. Scores and writeups are
           checked, and a withdrawn spot goes to the next eligible team. This page does not show a live leaderboard.
         </p>
+      </div>
       </div>
     </section>
   );

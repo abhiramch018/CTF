@@ -6,10 +6,13 @@ type CyberCursorProps = {
 
 const labels: Record<string, string> = {
   enter: "ENTER",
-  join: "JOIN",
-  explore: "EXPLORE",
+  join: "ENTER",
+  explore: "INSPECT",
+  inspect: "INSPECT",
+  open: "OPEN",
   link: "",
-  view: "ORBIT",
+  view: "DRAG",
+  drag: "DRAG",
   text: "",
   idle: "",
 };

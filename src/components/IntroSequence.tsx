@@ -32,6 +32,7 @@ export function IntroSequence({ phase, reducedMotion, onSkip }: IntroSequencePro
     <div className="intro-overlay" data-phase={phase} data-reduced={reducedMotion ? "true" : "false"}>
       <div className="intro-flash" />
       <div className="pixel-dissolve" />
+      <div className="signal-ring" aria-hidden="true" />
       <p className="terminal" aria-live="polite">
         {terminalLines.map((line) => (
           <span key={line} className={line === "ACCESS GRANTED" ? "term-line is-granted" : "term-line"}>

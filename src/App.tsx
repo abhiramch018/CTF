@@ -1,4 +1,3 @@
-import { SystemHud } from "./components/SystemHud.tsx";
 import { CyberCursor } from "./components/CyberCursor.tsx";
 import { IntroSequence } from "./components/IntroSequence.tsx";
 import { LandingPage } from "./components/LandingPage.tsx";
@@ -26,7 +25,6 @@ export default function App() {
         reducedMotion={reducedMotion}
       />
       <CyberCursor reducedMotion={reducedMotion} />
-      <SystemHud />
     </>
   );
 }

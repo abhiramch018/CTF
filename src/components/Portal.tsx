@@ -19,24 +19,30 @@ const fragmentShader = /* glsl */ `
   varying vec2 vUv;
 
   float hash(vec2 p) {
-    return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
+    return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
   }
 
   void main() {
-    vec2 cell = floor(vUv * vec2(12.0, 18.0));
-    float n = hash(cell);
-    float sweep = fract(vUv.y * 1.6 - uTime * 0.14);
-    float row = step(0.58, fract(n * 6.5 + uTime * 0.2 + sweep));
-    float glow = smoothstep(0.12, 1.0, n);
-    vec3 deep = vec3(0.02, 0.05, 0.02);
-    vec3 mid = vec3(0.28, 0.55, 0.05);
-    vec3 hot = vec3(0.714, 1.0, 0.0);
-    vec3 color = mix(deep, mid, glow);
-    color = mix(color, hot, row * 0.82);
-    float mask = smoothstep(0.0, 0.07, vUv.x) * smoothstep(1.0, 0.93, vUv.x);
-    mask *= smoothstep(0.0, 0.05, vUv.y) * smoothstep(1.0, 0.95, vUv.y);
-    float alpha = mask * (0.5 + 0.5 * clamp(uIntensity, 0.0, 1.0));
-    gl_FragColor = vec4(color * (0.22 + 0.78 * clamp(uIntensity, 0.0, 1.0)), alpha);
+    vec2 centered = vUv * 2.0 - 1.0;
+    float radius = length(centered * vec2(0.72, 1.0));
+    float pull = smoothstep(1.05, 0.15, radius);
+    vec2 warped = vUv + centered * pull * (0.035 + 0.02 * sin(uTime * 0.8));
+    warped.x += sin(warped.y * 18.0 + uTime * 0.85) * 0.018 * pull;
+    warped.y += sin(warped.x * 14.0 - uTime * 0.55) * 0.012 * pull;
+
+    float gate = smoothstep(1.02, 0.08, length((warped * 2.0 - 1.0) * vec2(0.7, 1.0)));
+    float stream = smoothstep(0.07, 0.0, abs(fract(warped.y * 4.0 - uTime * 0.22) - 0.5));
+    float ring = smoothstep(0.03, 0.0, abs(radius - 0.55 - sin(uTime * 0.6) * 0.03));
+    float rune = step(0.86, hash(floor(warped * vec2(18.0, 32.0) + uTime * 0.15))) * gate;
+    vec3 deep = vec3(0.0, 0.08, 0.04);
+    vec3 mid = vec3(0.0, 0.72, 0.36);
+    vec3 hot = vec3(0.0, 0.94, 0.48);
+    vec3 flash = vec3(0.32, 1.0, 0.6);
+    vec3 color = mix(deep, mid, gate);
+    color = mix(color, hot, stream * 0.85 + ring * 0.55);
+    color = mix(color, flash, rune * 0.7);
+    float alpha = gate * (0.55 + 0.45 * clamp(uIntensity, 0.0, 1.0));
+    gl_FragColor = vec4(color, alpha);
   }
 `;
 
@@ -65,22 +71,30 @@ export function Portal({ motion, spec }: PortalProps) {
       toneMapped: false,
     });
     const recess = new Mesh(
-      new PlaneGeometry(spec.width + 0.12, spec.height + 0.12),
-      new MeshBasicMaterial({ color: "#03110b" }),
+      new PlaneGeometry(spec.width + 0.16, spec.height + 0.16),
+      new MeshBasicMaterial({ color: "#010604" }),
     );
-    recess.position.set(0, spec.y, -0.22);
+    recess.position.set(0, spec.y, -0.16);
     const gate = new Mesh(new PlaneGeometry(spec.width, spec.height), material);
-    gate.position.set(0, spec.y, -0.05);
-    group.add(recess, gate);
+    gate.position.set(0, spec.y, -0.02);
+    const shaft = new Mesh(
+      new PlaneGeometry(spec.width * 0.38, spec.height * 1.8),
+      new MeshBasicMaterial({ color: "#00F07A", transparent: true, opacity: 0.12, depthWrite: false, toneMapped: false }),
+    );
+    shaft.position.set(0, spec.y + 0.4, -0.08);
+    group.add(recess, gate, shaft);
     materialRef.current = material;
 
     return () => {
       materialRef.current = null;
-      recess.geometry.dispose();
-      recess.material.dispose();
-      gate.geometry.dispose();
-      material.dispose();
-      group.remove(recess, gate);
+      group.children.forEach((child) => {
+        if (!(child instanceof Mesh)) return;
+        child.geometry.dispose();
+        const surface = child.material;
+        if (Array.isArray(surface)) surface.forEach((item) => item.dispose());
+        else surface.dispose();
+      });
+      group.clear();
     };
   }, [spec]);
 
@@ -91,5 +105,5 @@ export function Portal({ motion, spec }: PortalProps) {
     material.uniforms.uIntensity.value = motion.current?.intensity ?? 0;
   });
 
-  return <group ref={anchor} />;
+  return <group ref={anchor} position={[spec.x, 0, spec.z]} />;
 }

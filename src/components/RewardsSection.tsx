@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { inr } from "../content/event.ts";
+import { GhostWord } from "./GhostWord.tsx";
 
 const podiums = [
   {
@@ -45,8 +46,10 @@ const recognition = [
 export function RewardsSection() {
   const [open, setOpen] = useState("1ST PLACE");
   return (
-    <section id="rewards" className="sheet scroll-mt-24 px-5 py-20 md:px-8 md:py-28">
-      <div className="mx-auto max-w-6xl">
+    <section id="rewards" className="chapter sheet scroll-mt-24 px-5 py-20 md:px-8 md:py-28">
+      <div className="chapter-stage">
+      <GhostWord>VAULT</GhostWord>
+      <div className="section-copy mx-auto max-w-6xl">
         <p className="type-meta text-cyan">04 / THE VAULT</p>
         <h2 className="type-section mt-3 max-w-3xl">BREAK THE CODE. CLAIM THE REWARD.</h2>
         <p className="type-body mt-5">{inr.total} in cash prizes for the top three teams.</p>
@@ -55,7 +58,7 @@ export function RewardsSection() {
             <li
               key={podium.place}
               className={`reveal vault-chamber flex w-full max-w-xs flex-col items-center ${podium.order} ${index === 1 ? "" : index === 0 ? "reveal-delay-1" : "reveal-delay-2"} ${open === podium.place ? "is-open" : ""}`}
-              data-cursor="explore"
+              data-cursor="inspect"
             >
               <p className="type-meta text-neon">{podium.place}</p>
               <p className={`type-stat mt-2 ${"featured" in podium && podium.featured ? "is-featured-prize" : "is-ink"}`}>
@@ -66,6 +69,7 @@ export function RewardsSection() {
               <button
                 type="button"
                 className="hud-button mt-4"
+                data-cursor="open"
                 aria-expanded={open === podium.place}
                 onClick={() => setOpen(podium.place)}
               >
@@ -85,6 +89,7 @@ export function RewardsSection() {
         <p className="type-small mt-6 border-l-2 border-amber pl-4 text-amber">
           Internships, training, and other partner-linked benefits are announced only as each partner confirms them.
         </p>
+      </div>
       </div>
     </section>
   );

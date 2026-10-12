@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 import { CountdownReactor } from "./CountdownReactor.tsx";
+import { GhostWord } from "./GhostWord.tsx";
 import { inr } from "../content/event.ts";
 
 type StatProps = {
@@ -65,7 +66,7 @@ function Stat({ label, value, kind, note, reducedMotion }: StatProps) {
   }, [kind, reducedMotion, value]);
 
   return (
-    <article className="reveal border border-obsidian/80 bg-forest/40 p-4">
+    <article className="glass-panel reveal p-4">
       <p ref={ref} className="type-stat" />
       <h3 className="type-card mt-3">{label}</h3>
       {note ? <p className="type-small mt-2 text-amber">{note}</p> : null}
@@ -79,20 +80,22 @@ type EventOverviewProps = {
 
 export function EventOverview({ reducedMotion }: EventOverviewProps) {
   return (
-    <section id="overview" className="sheet sheet-forest scroll-mt-24 border-t border-obsidian px-5 py-20 md:px-8 md:py-28">
-      <div className="mx-auto max-w-6xl">
+    <section id="overview" className="chapter sheet sheet-forest scroll-mt-24 border-t border-obsidian px-5 py-20 md:px-8 md:py-28">
+      <div className="chapter-stage">
+      <GhostWord>MISSION</GhostWord>
+      <div className="section-copy mx-auto max-w-6xl">
         <p className="type-meta text-cyan">01 / THE MISSION</p>
         <h2 className="type-section mt-3 max-w-3xl">THE GRID IS WAITING</h2>
         <p className="type-body mt-5 max-w-2xl">
           Investigate. Decode. Exploit. Reverse. Every flag opens another path through the dimension.
         </p>
         <CountdownReactor />
-        <div className="mt-10 border border-obsidian bg-void/80">
-          <div className="flex items-center justify-between border-b border-obsidian px-4 py-2 type-meta text-muted">
+        <div className="glass-panel mt-10">
+          <div className="flex items-center justify-between border-b border-obsidian/70 px-4 py-2 type-meta text-muted">
             <span>GRID // STATUS</span>
             <span className="text-neon">SEASON 01</span>
           </div>
-          <div className="reveal-grid grid gap-px bg-obsidian sm:grid-cols-2 lg:grid-cols-4">
+          <div className="reveal-grid grid gap-3 p-3 sm:grid-cols-2 lg:grid-cols-4">
             <Stat label="Competition stages" value={2} kind="count" reducedMotion={reducedMotion} />
             <Stat label="Challenge disciplines" value={10} kind="count" reducedMotion={reducedMotion} />
             <Stat label="Maximum members per team" value={3} kind="count" reducedMotion={reducedMotion} />
@@ -106,7 +109,7 @@ export function EventOverview({ reducedMotion }: EventOverviewProps) {
               note="Planning estimate, not a confirmed registration count."
               reducedMotion={reducedMotion}
             />
-            <article className="reveal border border-obsidian/80 bg-forest/40 p-4">
+            <article className="glass-panel reveal p-4">
               <p className="type-stat is-ink">CTF</p>
               <h3 className="type-card mt-3">National-level challenge</h3>
               <p className="type-small mt-2">Two stages. Ten disciplines. One long night.</p>
@@ -114,7 +117,7 @@ export function EventOverview({ reducedMotion }: EventOverviewProps) {
           </div>
         </div>
         <div className="mt-8 grid gap-4 lg:grid-cols-2">
-          <div className="reveal border border-obsidian p-5">
+          <div className="glass-panel reveal p-5">
             <h3 className="type-meta text-neon">WHO CAN PLAY</h3>
             <ul className="type-small mt-4 space-y-2 text-ink">
               <li>Open to participants across India, ages 16–28.</li>
@@ -123,7 +126,7 @@ export function EventOverview({ reducedMotion }: EventOverviewProps) {
               <li>Finalists show a valid college ID at check-in.</li>
             </ul>
           </div>
-          <div className="reveal reveal-delay-1 border border-obsidian p-5">
+          <div className="glass-panel reveal reveal-delay-1 p-5">
             <h3 className="type-meta text-neon">KEY DATES</h3>
             <dl className="type-small mt-4 space-y-3 text-ink">
               <div className="flex items-baseline justify-between gap-4">
@@ -149,6 +152,7 @@ export function EventOverview({ reducedMotion }: EventOverviewProps) {
           Play fair. Attack only the systems the organisers provide. University systems, other teams, and outside
           targets are off limits. The writeup deadline will be posted on the official channels. Fee {inr.fee} per player.
         </p>
+      </div>
       </div>
     </section>
   );

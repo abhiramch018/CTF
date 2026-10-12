@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { challenges } from "../content/event.ts";
+import { GhostWord } from "./GhostWord.tsx";
 
 function PixelIcon({ rows }: { rows: readonly string[] }) {
   return (
@@ -61,8 +62,10 @@ export function ChallengeGrid() {
   }, []);
 
   return (
-    <section id="challenges" className="sheet scroll-mt-24 px-5 py-20 md:px-8 md:py-28">
-      <div className="mx-auto max-w-6xl">
+    <section id="challenges" className="chapter sheet scroll-mt-24 px-5 py-20 md:px-8 md:py-28">
+      <div className="chapter-stage">
+      <GhostWord>SECTORS</GhostWord>
+      <div className="section-copy mx-auto max-w-6xl">
         <p className="type-meta text-cyan">02 / CHALLENGE SECTORS</p>
         <h2 className="type-section mt-3 max-w-3xl">TEN DISCIPLINES. ONE GRID.</h2>
         <p className="type-body mt-5 max-w-2xl">
@@ -71,23 +74,23 @@ export function ChallengeGrid() {
         <div className="tunnel" aria-hidden="true">
           <span />
         </div>
-        <div ref={grid} className="challenge-grid reveal-grid mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <div ref={grid} className="challenge-grid dossier-list mt-12">
           {challenges.map((challenge) => (
             <article
               key={challenge.id}
-              className={`challenge-card reveal sector-${challenge.id} border border-obsidian bg-forest/50 p-4`}
-              data-cursor="explore"
+              className={`challenge-card dossier reveal sector-${challenge.id}`}
+              data-cursor="inspect"
             >
-              <div className="flex items-start justify-between gap-3">
-                <PixelIcon rows={challenge.pixels} />
-                <span className="type-meta text-muted">{challenge.id}</span>
+              <span className="type-meta text-muted">{challenge.id}</span>
+              <PixelIcon rows={challenge.pixels} />
+              <div>
+                <h3 className="type-card">{challenge.name}</h3>
+                <p className="type-small mt-2">{challenge.summary}</p>
               </div>
-              <h3 className="type-card mt-4">{challenge.name}</h3>
-              <p className="type-small mt-2">{challenge.summary}</p>
             </article>
           ))}
         </div>
-        <dl className="mt-8 grid gap-4 border border-obsidian bg-void/60 p-5 sm:grid-cols-2 lg:grid-cols-4">
+        <dl className="glass-panel mt-10 grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <dt className="type-meta text-muted">CHALLENGES</dt>
             <dd className="type-small mt-1 text-ink">50–70 across both rounds, easy to hard</dd>
@@ -105,6 +108,7 @@ export function ChallengeGrid() {
             <dd className="type-small mt-1 text-ink">May cost points. Full rules are in the organisers’ rulebook.</dd>
           </div>
         </dl>
+      </div>
       </div>
     </section>
   );

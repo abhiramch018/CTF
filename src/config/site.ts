@@ -18,6 +18,7 @@ export const socialLinks: { label: string; href: string | null }[] = [
 ];
 
 export const logos = {
-  gdg: "/brands/gdg.png",
-  whh: "/brands/whh.jpg",
+  kl: "/brands/kl.png",
+  gdg: "/brands/gdev.png",
+  whh: "/brands/whh.png",
 };

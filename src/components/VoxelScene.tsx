@@ -4,7 +4,9 @@ import { BufferAttribute, Color, Group, InstancedMesh, Matrix4, MeshStandardMate
 import type { MotionRef } from "../hooks/useIntroController.ts";
 import type { SceneJourney } from "../hooks/useScrollJourney.ts";
 import { buildScene, sceneQuality, type SceneQuality } from "../lib/sceneLayout.ts";
+import { Operative } from "./Operative.tsx";
 import { Portal } from "./Portal.tsx";
+import { FirewallGate, PacketRoutes, SignalLife, VoxelFragments } from "./WorldLife.tsx";
 
 type JourneyRef = { current: SceneJourney };
 
@@ -17,18 +19,60 @@ type VoxelSceneProps = {
   onReady: () => void;
 };
 
+type Pose = {
+  t: number;
+  x: number;
+  y: number;
+  z: number;
+  lx: number;
+  ly: number;
+  lz: number;
+};
+
+const CAMERA_PATH: Pose[] = [
+  { t: 0, x: 0, y: 1.86, z: 7.45, lx: 0.15, ly: 2.45, lz: -0.35 },
+  { t: 0.16, x: 0.08, y: 1.92, z: 4.4, lx: -0.15, ly: 2.15, lz: -1.2 },
+  { t: 0.3, x: 0, y: 1.85, z: 0.7, lx: 0, ly: 1.8, lz: -6 },
+  { t: 0.46, x: 0.25, y: 1.6, z: -7.5, lx: 0.1, ly: 1.55, lz: -15 },
+  { t: 0.62, x: -0.1, y: 1.7, z: -15.5, lx: 0, ly: 1.7, lz: -24 },
+  { t: 0.8, x: 0.1, y: 2.15, z: -26, lx: 0, ly: 1.9, lz: -36 },
+  { t: 1, x: 0, y: 2.25, z: -34.5, lx: 0, ly: 2.1, lz: -42 },
+];
+
+function smoothMix(edge0: number, edge1: number, value: number) {
+  const span = Math.max(0.0001, edge1 - edge0);
+  const amount = Math.min(1, Math.max(0, (value - edge0) / span));
+  return amount * amount * (3 - 2 * amount);
+}
+
+function samplePath(progress: number) {
+  const t = Math.min(1, Math.max(0, progress));
+  let index = 0;
+  while (index < CAMERA_PATH.length - 2 && t > CAMERA_PATH[index + 1].t) index += 1;
+  const from = CAMERA_PATH[index];
+  const to = CAMERA_PATH[index + 1];
+  const amount = smoothMix(from.t, to.t, t);
+  const mix = (start: number, end: number) => start + (end - start) * amount;
+  return {
+    x: mix(from.x, to.x),
+    y: mix(from.y, to.y),
+    z: mix(from.z, to.z),
+    lx: mix(from.lx, to.lx),
+    ly: mix(from.ly, to.ly),
+    lz: mix(from.lz, to.lz),
+  };
+}
+
 function CameraRig({
   motion,
   journey,
   reducedMotion,
   scrollLive,
-  scale,
 }: {
   motion: MotionRef;
   journey: JourneyRef;
   reducedMotion: boolean;
   scrollLive: boolean;
-  scale: number;
 }) {
   const pointer = useRef({ x: 0, y: 0 });
 
@@ -38,17 +82,24 @@ function CameraRig({
     const drift = reducedMotion ? 0 : current.drift;
     const time = clock.elapsedTime;
     const live = scrollLive && !reducedMotion;
-    const hero = live ? journey.current.hero : 0;
-    const finale = live ? journey.current.finale : 0;
-    const push = hero * (1 - finale * 0.85);
-    pointer.current.x += ((live ? journey.current.pointerX : 0) - pointer.current.x) * 0.06;
-    pointer.current.y += ((live ? journey.current.pointerY : 0) - pointer.current.y) * 0.06;
+    pointer.current.x += ((live ? journey.current.pointerX : 0) - pointer.current.x) * 0.05;
+    pointer.current.y += ((live ? journey.current.pointerY : 0) - pointer.current.y) * 0.05;
+    if (!live) {
+      camera.position.set(
+        current.x + Math.sin(time * 0.12) * 0.1 * drift,
+        current.y + Math.sin(time * 0.08) * 0.04 * drift,
+        current.z,
+      );
+      camera.lookAt(0.15, current.lookY, -0.35);
+      return;
+    }
+    const pose = samplePath(journey.current.depth);
     camera.position.set(
-      current.x + Math.sin(time * 0.17) * 0.08 * drift + push * 0.52 * scale - finale * 0.18 * scale + pointer.current.x * 0.1 * scale,
-      current.y + Math.sin(time * 0.11) * 0.035 * drift - pointer.current.y * 0.04 * scale,
-      Math.max(6.4, current.z - push * 0.62 * scale),
+      pose.x + Math.sin(time * 0.12) * 0.05 * drift + pointer.current.x * 0.1,
+      pose.y + Math.sin(time * 0.08) * 0.03 * drift - pointer.current.y * 0.04,
+      pose.z,
     );
-    camera.lookAt(0.15 + push * 0.32 * scale - finale * 0.22 * scale, current.lookY, 0);
+    camera.lookAt(pose.lx + pointer.current.x * 0.05, pose.ly, pose.lz);
   });
   return null;
 }
@@ -62,24 +113,25 @@ function Lights({
   journey: JourneyRef;
   scrollLive: boolean;
 }) {
-  const light = useRef<import("three").PointLight>(null);
+  const portalLight = useRef<import("three").PointLight>(null);
+  const corridorLight = useRef<import("three").PointLight>(null);
   useFrame(({ clock }) => {
-    if (!light.current || !motion.current) return;
-    const base = 3.5 + motion.current.intensity * 9;
-    if (!scrollLive) {
-      light.current.intensity = base;
-      return;
+    const lamp = portalLight.current;
+    if (!lamp || !motion.current) return;
+    const pulse = scrollLive ? Math.sin(clock.elapsedTime * 1.1) * 0.35 : 0;
+    const pass = scrollLive ? Math.sin(Math.min(1, journey.current.depth) * Math.PI) : 0;
+    lamp.intensity = 2.4 + motion.current.intensity * 2.2 + pulse + pass * 1.4;
+    if (corridorLight.current) {
+      corridorLight.current.intensity = scrollLive ? 1.2 + journey.current.tunnel * 1.6 : 0.4;
     }
-    const pulse = Math.sin(clock.elapsedTime * 1.15) * 0.28;
-    const hero = journey.current.hero;
-    const finale = journey.current.finale;
-    light.current.intensity = base + pulse - hero * 1.1 + finale * 2.2;
   });
   return (
     <>
-      <ambientLight color="#10241a" intensity={0.42} />
-      <directionalLight color="#d7ece2" intensity={0.2} position={[5, 8, 7]} />
-      <pointLight ref={light} color="#b6ff00" position={[0, 2.7, 1.5]} distance={15} decay={2} />
+      <ambientLight color="#053D24" intensity={0.72} />
+      <hemisphereLight color="#00B85C" groundColor="#010604" intensity={0.45} />
+      <directionalLight color="#B5FFE0" intensity={1.15} position={[-3, 8, 6]} />
+      <pointLight ref={portalLight} color="#00F07A" position={[-0.35, 2.15, 1.6]} distance={16} decay={2} />
+      <pointLight ref={corridorLight} color="#52FF9A" position={[0, 1.8, -16]} distance={14} decay={2} />
     </>
   );
 }
@@ -90,7 +142,7 @@ function VoxelField({
   scrollLive = false,
 }: {
   matrices: Matrix4[];
-  tone: "dark" | "accent";
+  tone: "stone" | "ground" | "accent";
   scrollLive?: boolean;
 }) {
   const ref = useRef<InstancedMesh>(null);
@@ -101,11 +153,13 @@ function VoxelField({
     if (!mesh) return;
     matrices.forEach((matrix, index) => mesh.setMatrixAt(index, matrix));
     mesh.instanceMatrix.needsUpdate = true;
-    if (tone === "dark") {
+    if (tone !== "accent") {
       const color = new Color();
       matrices.forEach((_, index) => {
-        const lift = (index % 6) * 0.012;
-        color.setRGB(0.04 + lift, 0.07 + lift * 1.35, 0.05 + lift);
+        const band = index % 7;
+        const lift = band * 0.018;
+        const green = tone === "ground" ? 0.1 + lift : band === 0 ? 0.22 : 0.12 + lift;
+        color.setRGB(0.015 + lift * 0.2, green, 0.045 + lift);
         mesh.setColorAt(index, color);
       });
       if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
@@ -116,25 +170,26 @@ function VoxelField({
   useFrame(({ clock }) => {
     const material = materialRef.current;
     if (!material || tone !== "accent") return;
-    material.emissiveIntensity = scrollLive ? 0.22 + Math.sin(clock.elapsedTime * 1.35) * 0.07 : 0.28;
+    material.emissiveIntensity = scrollLive ? 0.85 + Math.sin(clock.elapsedTime * 1.3) * 0.2 : 0.9;
   });
 
   if (matrices.length === 0) return null;
 
   return (
     <instancedMesh ref={ref} args={[undefined, undefined, matrices.length]}>
-      <boxGeometry args={[0.46, 0.46, 0.46]} />
-      {tone === "dark" ? (
-        <meshStandardMaterial roughness={0.94} metalness={0.04} />
-      ) : (
+      <boxGeometry args={[1, 1, 1]} />
+      {tone === "accent" ? (
         <meshStandardMaterial
           ref={materialRef}
-          color="#143226"
-          emissive="#b6ff00"
-          emissiveIntensity={0.28}
-          roughness={0.7}
+          color="#053D24"
+          emissive="#00F07A"
+          emissiveIntensity={0.9}
+          roughness={0.42}
+          metalness={0.2}
           toneMapped={false}
         />
+      ) : (
+        <meshStandardMaterial roughness={0.62} metalness={0.28} />
       )}
     </instancedMesh>
   );
@@ -143,133 +198,55 @@ function VoxelField({
 function DriftParticles({
   count,
   motion,
+  journey,
   reducedMotion,
+  scrollLive,
 }: {
   count: number;
   motion: MotionRef;
+  journey: JourneyRef;
   reducedMotion: boolean;
+  scrollLive: boolean;
 }) {
   const [positions] = useState(() => {
     const data = new Float32Array(count * 3);
     for (let index = 0; index < count; index += 1) {
-      data[index * 3] = (Math.random() - 0.5) * 6.2;
+      data[index * 3] = (Math.random() - 0.5) * 14;
       data[index * 3 + 1] = 0.4 + Math.random() * 5;
-      data[index * 3 + 2] = Math.random() * 5.5;
+      data[index * 3 + 2] = 6 - Math.random() * 42;
     }
     return data;
   });
-  const [speeds] = useState(() => Float32Array.from({ length: count }, () => 0.22 + Math.random() * 0.65));
+  const [speeds] = useState(() => Float32Array.from({ length: count }, () => 0.15 + Math.random() * 0.45));
   const ref = useRef<Points>(null);
+  const group = useRef<Group>(null);
 
   useFrame((_, delta) => {
     const lite = document.documentElement.classList.contains("perf-lite");
     const activity = reducedMotion || lite ? 0 : (motion.current?.particles ?? 0);
+    if (group.current && scrollLive) {
+      group.current.position.x += (journey.current.pointerX * 0.18 - group.current.position.x) * 0.05;
+      group.current.position.y += (-journey.current.pointerY * 0.08 - group.current.position.y) * 0.05;
+    }
     if (activity <= 0.02) return;
     const attribute = ref.current?.geometry.getAttribute("position");
     if (!(attribute instanceof BufferAttribute)) return;
     for (let index = 0; index < count; index += 1) {
-      let z = attribute.getZ(index) - speeds[index] * delta * (0.35 + activity);
-      if (z < -0.15) {
-        z = 4.2 + Math.random() * 2.2;
-        attribute.setX(index, (Math.random() - 0.5) * 5.2);
-        attribute.setY(index, 0.7 + Math.random() * 4.2);
-      }
-      attribute.setZ(index, z);
+      let y = attribute.getY(index) + speeds[index] * delta * (0.12 + activity * 0.28);
+      if (y > 6.4) y = 0.3;
+      attribute.setY(index, y);
     }
     attribute.needsUpdate = true;
   });
 
   return (
-    <points ref={ref}>
-      <bufferGeometry>
-        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
-      </bufferGeometry>
-      <pointsMaterial
-        color="#b6ff00"
-        size={0.05}
-        sizeAttenuation
-        transparent
-        opacity={0.8}
-        depthWrite={false}
-        toneMapped={false}
-      />
-    </points>
-  );
-}
-
-function DepthLayer({
-  shift,
-  journey,
-  scrollLive,
-  children,
-}: {
-  shift: number;
-  journey: JourneyRef;
-  scrollLive: boolean;
-  children: ReactNode;
-}) {
-  const ref = useRef<Group>(null);
-  useFrame(() => {
-    const group = ref.current;
-    if (!group) return;
-    const hero = scrollLive ? journey.current.hero : 0;
-    group.position.x = hero * shift;
-    group.position.z = hero * shift * 0.35;
-  });
-  return <group ref={ref}>{children}</group>;
-}
-
-function CyberCore({
-  portalY,
-  journey,
-  scrollLive,
-  reducedMotion,
-  motion,
-}: {
-  portalY: number;
-  journey: JourneyRef;
-  scrollLive: boolean;
-  reducedMotion: boolean;
-  motion: MotionRef;
-}) {
-  const group = useRef<Group>(null);
-
-  useFrame(({ clock }) => {
-    const node = group.current;
-    if (!node) return;
-    const intensity = motion.current?.intensity ?? 0;
-    const live = scrollLive && !reducedMotion;
-    const hero = live ? journey.current.hero : 0;
-    const px = live ? journey.current.pointerX : 0;
-    const py = live ? journey.current.pointerY : 0;
-    const assemble = reducedMotion ? 1 : Math.min(1, 0.2 + intensity);
-    node.scale.setScalar((0.2 + assemble * 0.8) * (1 - hero * 0.28));
-    const lite = document.documentElement.classList.contains("perf-lite");
-    node.rotation.y = clock.elapsedTime * (reducedMotion || lite ? 0.04 : 0.28) + px * 0.4;
-    node.rotation.x = py * 0.22;
-    node.position.set(px * 0.18 + hero * 0.7, portalY, 0.35 - hero * 0.45);
-  });
-
-  return (
     <group ref={group}>
-      <mesh>
-        <icosahedronGeometry args={[0.78, 1]} />
-        <meshBasicMaterial color="#b6ff00" wireframe transparent opacity={0.8} toneMapped={false} />
-      </mesh>
-      <mesh>
-        <octahedronGeometry args={[0.36, 0]} />
-        <meshStandardMaterial
-          color="#14180c"
-          emissive="#b6ff00"
-          emissiveIntensity={1.6}
-          roughness={0.35}
-          toneMapped={false}
-        />
-      </mesh>
-      <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[1.08, 0.012, 8, 40]} />
-        <meshBasicMaterial color="#7cffe1" transparent opacity={0.65} toneMapped={false} />
-      </mesh>
+      <points ref={ref}>
+        <bufferGeometry>
+          <bufferAttribute attach="attributes-position" args={[positions, 3]} />
+        </bufferGeometry>
+        <pointsMaterial color="#52FF9A" size={0.035} sizeAttenuation transparent opacity={0.7} depthWrite={false} toneMapped={false} />
+      </points>
     </group>
   );
 }
@@ -284,6 +261,10 @@ function ReadyProbe({ onReady }: { onReady: () => void }) {
   return null;
 }
 
+function FarMist({ children }: { children: ReactNode }) {
+  return <group>{children}</group>;
+}
+
 export default function VoxelScene({
   motion,
   journey,
@@ -294,54 +275,63 @@ export default function VoxelScene({
 }: VoxelSceneProps) {
   const quality = useMemo<SceneQuality>(() => sceneQuality(), []);
   const layout = useMemo(() => buildScene(quality), [quality]);
-  const depthScale = quality === "high" ? 1 : 0.4;
+  const detailed = quality === "high";
 
   return (
     <Canvas
       className="h-full w-full"
-      dpr={quality === "high" ? [1, 1.5] : 1}
-      camera={{ fov: 38, near: 0.1, far: 42, position: [0, 2.4, 12.5] }}
+      dpr={detailed ? [1, 1.5] : 1}
+      camera={{ fov: 38, near: 0.1, far: 80, position: [0, 2.4, 12.5] }}
       gl={{
-        antialias: quality === "high",
+        antialias: detailed,
         alpha: false,
         stencil: false,
-        powerPreference: quality === "high" ? "high-performance" : "low-power",
+        powerPreference: detailed ? "high-performance" : "low-power",
         failIfMajorPerformanceCaveat: false,
       }}
       frameloop={active ? "always" : "never"}
       onCreated={({ gl, camera }) => {
-        gl.setClearColor("#050807", 1);
+        gl.setClearColor("#010604", 1);
+        gl.toneMappingExposure = 1.35;
         camera.lookAt(0.15, 2.55, 0);
       }}
     >
-      <fog attach="fog" args={["#050807", 8, 23]} />
-      <CameraRig
-        motion={motion}
-        journey={journey}
-        reducedMotion={reducedMotion}
-        scrollLive={scrollLive}
-        scale={depthScale}
-      />
+      <fog attach="fog" args={["#010604", 7, 28]} />
+      <CameraRig motion={motion} journey={journey} reducedMotion={reducedMotion} scrollLive={scrollLive} />
       <Lights motion={motion} journey={journey} scrollLive={scrollLive} />
-      <DepthLayer journey={journey} scrollLive={scrollLive} shift={-0.42 * depthScale}>
-        <VoxelField matrices={layout.background} tone="dark" />
-      </DepthLayer>
-      <DepthLayer journey={journey} scrollLive={scrollLive} shift={0.1 * depthScale}>
-        <VoxelField matrices={layout.frame} tone="dark" />
+      <FarMist>
+        <VoxelField matrices={layout.ground} tone="ground" />
+        <VoxelField matrices={layout.stone} tone="stone" />
         <VoxelField matrices={layout.accent} tone="accent" scrollLive={scrollLive} />
         <Portal motion={motion} spec={layout.portal} />
-        <CyberCore
-          portalY={layout.portal.y}
+        <FirewallGate z={layout.gateZ} journey={journey} scrollLive={scrollLive} />
+        <Operative
+          reducedMotion={reducedMotion}
+          detailed={detailed}
+          position={[layout.operative.x, layout.operative.y, layout.operative.z]}
+          rotationY={layout.operative.rotY}
+        />
+        <VoxelFragments
+          portal={layout.portal}
           journey={journey}
           scrollLive={scrollLive}
-          reducedMotion={reducedMotion}
-          motion={motion}
+          count={detailed ? 28 : 12}
         />
-      </DepthLayer>
-      <DepthLayer journey={journey} scrollLive={scrollLive} shift={0.55 * depthScale}>
-        <VoxelField matrices={layout.foreground} tone="dark" />
-      </DepthLayer>
-      <DriftParticles count={quality === "high" ? 70 : 26} motion={motion} reducedMotion={reducedMotion} />
+        <PacketRoutes
+          routes={layout.routes}
+          reducedMotion={reducedMotion}
+          count={detailed ? 48 : 18}
+          journey={journey}
+        />
+        <SignalLife reducedMotion={reducedMotion} detailed={detailed} />
+        <DriftParticles
+          count={detailed ? 80 : 28}
+          motion={motion}
+          journey={journey}
+          reducedMotion={reducedMotion}
+          scrollLive={scrollLive}
+        />
+      </FarMist>
       <ReadyProbe onReady={onReady} />
     </Canvas>
   );

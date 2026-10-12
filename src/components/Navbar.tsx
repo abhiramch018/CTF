@@ -1,11 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type MouseEvent } from "react";
 import { logos } from "../config/site.ts";
 import { navLinks } from "../content/event.ts";
-import { RegisterButton } from "./RegisterButton.tsx";
 
 type NavbarProps = {
   settled: boolean;
+  reducedMotion: boolean;
 };
+
+const field = [
+  { href: "#top", id: "top", label: "Access Gate" },
+  ...navLinks.map((link) => ({ href: link.href, id: link.href.slice(1), label: link.label })),
+  { href: "#register", id: "register", label: "Final Access" },
+];
 
 function BrandLogo({ src, alt }: { src: string; alt: string }) {
   const [failed, setFailed] = useState(false);
@@ -16,89 +22,75 @@ function BrandLogo({ src, alt }: { src: string; alt: string }) {
     <img
       src={src}
       alt={alt}
-      width={56}
-      height={56}
-      className="h-12 w-auto bg-white object-contain md:h-14"
+      width={160}
+      height={88}
+      className="brand-logo object-contain"
       onError={() => setFailed(true)}
     />
   );
 }
 
-export function Navbar({ settled }: NavbarProps) {
-  const [scrolled, setScrolled] = useState(false);
-  const [open, setOpen] = useState(false);
+export function Navbar({ settled, reducedMotion }: NavbarProps) {
+  const [active, setActive] = useState("top");
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 12);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    const nodes = field
+      .map((item) => document.getElementById(item.id))
+      .filter((node): node is HTMLElement => node instanceof HTMLElement);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (visible?.target.id) setActive(visible.target.id);
+      },
+      { rootMargin: "-20% 0px -55% 0px", threshold: [0.15, 0.35, 0.6] },
+    );
+    nodes.forEach((node) => observer.observe(node));
+    return () => observer.disconnect();
   }, []);
 
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open]);
+  const go = (event: MouseEvent<HTMLAnchorElement>, id: string) => {
+    const node = document.getElementById(id);
+    if (!node) return;
+    event.preventDefault();
+    window.history.replaceState(null, "", `#${id}`);
+    if (!node.hasAttribute("tabindex")) node.tabIndex = -1;
+    window.setTimeout(() => {
+      node.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "start" });
+      node.focus({ preventScroll: true });
+    }, 0);
+  };
 
   return (
-    <header className={`site-nav ${settled ? "is-ready" : "is-waiting"} ${scrolled || open ? "is-solid" : ""}`}>
-      <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 md:px-8">
-        <a href="#top" className="flex items-center gap-2" aria-label="DEAD NOCTIS CTF home" data-cursor="view">
-          <BrandLogo src={logos.gdg} alt="Google Developer Groups, KL Deemed to be University" />
-          <BrandLogo src={logos.whh} alt="White Hat Hackers" />
-          <span className="ml-1 hidden leading-tight sm:block">
-            <span className="block font-display text-[11px] text-ink md:text-xs">DEAD NOCTIS</span>
-            <span className="block font-mono text-[10px] tracking-[0.18em] text-muted">CTF · S01</span>
-          </span>
-        </a>
-        <nav className="ml-auto hidden items-center gap-6 md:flex" aria-label="Sections">
-          {navLinks.map((link) => (
-            <a key={link.href} href={link.href} className="nav-link" data-cursor="link">
-              {link.label}
-            </a>
+    <header className={`site-nav ${settled ? "is-ready" : "is-waiting"}`}>
+      <a href="#top" className="brand-lockup" aria-label="DEAD NOCTIS CTF home" data-cursor="link" onMouseDown={(event) => event.preventDefault()} onClick={(event) => go(event, "top")}>
+        <BrandLogo src={logos.kl} alt="KL University" />
+        <BrandLogo src={logos.gdg} alt="Google Developer Groups" />
+        <BrandLogo src={logos.whh} alt="White Hat Hackers" />
+        <span className="brand-name">
+          <span className="block font-display text-sm text-ink md:text-base">DEAD NOCTIS</span>
+          <span className="mt-1 block font-mono text-[10px] tracking-[0.18em] text-muted">CTF — SEASON 01</span>
+        </span>
+      </a>
+      <nav className="field-index" aria-label="Sections">
+        <ol>
+          {field.map((item, index) => (
+            <li key={item.id}>
+              <a
+                href={item.href}
+                data-cursor="open"
+                aria-current={active === item.id ? "location" : undefined}
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={(event) => go(event, item.id)}
+              >
+                <span>{String(index).padStart(2, "0")}</span>
+                {item.label}
+              </a>
+            </li>
           ))}
-          <RegisterButton variant="nav">REGISTER</RegisterButton>
-        </nav>
-        <div className="ml-auto flex items-center gap-2 md:hidden">
-          <RegisterButton variant="nav">REGISTER</RegisterButton>
-          <button
-            type="button"
-            className="inline-flex h-11 w-11 items-center justify-center border border-obsidian text-ink"
-            aria-expanded={open}
-            aria-controls="mobile-nav"
-            onClick={() => setOpen((value) => !value)}
-          >
-            <span className="sr-only">{open ? "Close menu" : "Open menu"}</span>
-            <span aria-hidden="true" className="flex flex-col gap-1.5">
-              <span className="block h-px w-4 bg-ink" />
-              <span className="block h-px w-4 bg-ink" />
-              <span className="block h-px w-4 bg-neon" />
-            </span>
-          </button>
-        </div>
-      </div>
-      {open ? (
-        <nav id="mobile-nav" className="border-t border-obsidian px-4 py-3 md:hidden" aria-label="Sections">
-          <ul className="flex flex-col">
-            {navLinks.map((link) => (
-              <li key={link.href}>
-                <a
-                  href={link.href}
-                  className="nav-link block py-3 text-ink"
-                  data-cursor="link"
-                  onClick={() => setOpen(false)}
-                >
-                  {link.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      ) : null}
+        </ol>
+      </nav>
     </header>
   );
 }

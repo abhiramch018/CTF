@@ -15,6 +15,7 @@ export function PortalFallback({ animate = false, compact = false }: PortalFallb
           <div className="css-portal__gate" />
         </div>
         <div className="css-portal__rubble css-portal__rubble-right" />
+        <div className="css-portal__operative" />
       </div>
     </div>
   );

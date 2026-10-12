@@ -1,5 +1,6 @@
 import { contact, socialLinks } from "../config/site.ts";
 import { inr } from "../content/event.ts";
+import { GhostWord } from "./GhostWord.tsx";
 import { PortalFallback } from "./PortalFallback.tsx";
 import { RegisterButton } from "./RegisterButton.tsx";
 
@@ -9,9 +10,11 @@ type EventFooterProps = {
 
 export function EventFooter({ reducedMotion }: EventFooterProps) {
   return (
-    <footer id="register" className="finale-sheet scroll-mt-24 border-t border-obsidian px-5 py-20 md:px-8">
+    <footer id="register" className="chapter finale-sheet scroll-mt-24 border-t border-obsidian px-5 py-20 md:px-8">
+      <div className="chapter-stage">
       <div className="finale-scrim" aria-hidden="true" />
-      <div className="relative z-[1] mx-auto max-w-6xl">
+      <GhostWord>ENTER</GhostWord>
+      <div className="section-copy relative z-[1] mx-auto max-w-6xl">
         <PortalFallback animate={!reducedMotion} compact />
         <p className="type-meta mt-8 text-neon">05 / FINAL ACCESS</p>
         <h2 className="type-finale mt-3">THE SYSTEM IS WAITING.</h2>
@@ -71,6 +74,7 @@ export function EventFooter({ reducedMotion }: EventFooterProps) {
           <p>GDG × WHITE HAT HACKERS</p>
           <p className="mt-2">DEAD NOCTIS CTF · SEASON 01</p>
         </div>
+      </div>
       </div>
     </footer>
   );
