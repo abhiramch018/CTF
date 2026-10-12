@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { inr } from "../content/event.ts";
 
 const podiums = [
@@ -42,17 +43,18 @@ const recognition = [
 ];
 
 export function RewardsSection() {
+  const [open, setOpen] = useState("1ST PLACE");
   return (
     <section id="rewards" className="sheet scroll-mt-24 px-5 py-20 md:px-8 md:py-28">
       <div className="mx-auto max-w-6xl">
-        <p className="type-meta text-neon">04 / REWARDS</p>
+        <p className="type-meta text-cyan">04 / THE VAULT</p>
         <h2 className="type-section mt-3 max-w-3xl">BREAK THE CODE. CLAIM THE REWARD.</h2>
         <p className="type-body mt-5">{inr.total} in cash prizes for the top three teams.</p>
         <ol className="mt-12 flex list-none flex-col items-center gap-10 p-0 md:flex-row md:items-end md:justify-center md:gap-8">
           {podiums.map((podium, index) => (
             <li
               key={podium.place}
-              className={`reveal flex w-full max-w-xs flex-col items-center ${podium.order} ${index === 1 ? "" : index === 0 ? "reveal-delay-1" : "reveal-delay-2"}`}
+              className={`reveal vault-chamber flex w-full max-w-xs flex-col items-center ${podium.order} ${index === 1 ? "" : index === 0 ? "reveal-delay-1" : "reveal-delay-2"} ${open === podium.place ? "is-open" : ""}`}
               data-cursor="explore"
             >
               <p className="type-meta text-neon">{podium.place}</p>
@@ -61,6 +63,14 @@ export function RewardsSection() {
               </p>
               <p className="type-small mt-2 text-center">Goodies, certificate, stickers, and an ID card</p>
               <div className={`pedestal mt-5 w-full ${podium.height} ${"featured" in podium && podium.featured ? "is-featured" : ""}`} />
+              <button
+                type="button"
+                className="hud-button mt-4"
+                aria-expanded={open === podium.place}
+                onClick={() => setOpen(podium.place)}
+              >
+                {open === podium.place ? "OPEN" : "INSPECT"}
+              </button>
             </li>
           ))}
         </ol>

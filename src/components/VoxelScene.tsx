@@ -162,7 +162,8 @@ function DriftParticles({
   const ref = useRef<Points>(null);
 
   useFrame((_, delta) => {
-    const activity = reducedMotion ? 0 : (motion.current?.particles ?? 0);
+    const lite = document.documentElement.classList.contains("perf-lite");
+    const activity = reducedMotion || lite ? 0 : (motion.current?.particles ?? 0);
     if (activity <= 0.02) return;
     const attribute = ref.current?.geometry.getAttribute("position");
     if (!(attribute instanceof BufferAttribute)) return;
@@ -243,7 +244,8 @@ function CyberCore({
     const py = live ? journey.current.pointerY : 0;
     const assemble = reducedMotion ? 1 : Math.min(1, 0.2 + intensity);
     node.scale.setScalar((0.2 + assemble * 0.8) * (1 - hero * 0.28));
-    node.rotation.y = clock.elapsedTime * (reducedMotion ? 0 : 0.28) + px * 0.4;
+    const lite = document.documentElement.classList.contains("perf-lite");
+    node.rotation.y = clock.elapsedTime * (reducedMotion || lite ? 0.04 : 0.28) + px * 0.4;
     node.rotation.x = py * 0.22;
     node.position.set(px * 0.18 + hero * 0.7, portalY, 0.35 - hero * 0.45);
   });

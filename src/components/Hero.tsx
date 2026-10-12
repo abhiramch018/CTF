@@ -67,7 +67,8 @@ export function Hero({ settled, reducedMotion }: HeroProps) {
     <section id="top" className="hero-sheet relative min-h-[100svh]">
       <div className="hero-scrim" aria-hidden="true" />
       <div className={`hero-copy ${settled ? "is-visible" : ""}`}>
-        <p className="type-meta text-neon">
+        <p className="type-meta text-cyan">00 / ACCESS GATE</p>
+        <p className="type-meta mt-3 text-neon">
           KL UNIVERSITY × GOOGLE DEVELOPER GROUPS × WHITE HAT HACKERS
         </p>
         <h1 id="hero-title" tabIndex={-1} className="type-hero mt-5">

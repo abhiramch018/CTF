@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
+import { CountdownReactor } from "./CountdownReactor.tsx";
 import { inr } from "../content/event.ts";
 
 type StatProps = {
@@ -80,11 +81,12 @@ export function EventOverview({ reducedMotion }: EventOverviewProps) {
   return (
     <section id="overview" className="sheet sheet-forest scroll-mt-24 border-t border-obsidian px-5 py-20 md:px-8 md:py-28">
       <div className="mx-auto max-w-6xl">
-        <p className="type-meta text-neon">01 / EVENT OVERVIEW</p>
+        <p className="type-meta text-cyan">01 / THE MISSION</p>
         <h2 className="type-section mt-3 max-w-3xl">THE GRID IS WAITING</h2>
         <p className="type-body mt-5 max-w-2xl">
           Investigate. Decode. Exploit. Reverse. Every flag opens another path through the dimension.
         </p>
+        <CountdownReactor />
         <div className="mt-10 border border-obsidian bg-void/80">
           <div className="flex items-center justify-between border-b border-obsidian px-4 py-2 type-meta text-muted">
             <span>GRID // STATUS</span>

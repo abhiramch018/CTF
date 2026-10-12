@@ -1,3 +1,6 @@
+import { useState } from "react";
+import { inr } from "../content/event.ts";
+
 const qualifierPoints = [
   "6 December 2026",
   "9:00 AM – 9:00 PM",
@@ -16,11 +19,53 @@ const finalsPoints = [
 ];
 
 export function CompetitionFormat() {
+  const [active, setActive] = useState("qualifier");
+  const checkpoints = [
+    {
+      id: "register",
+      title: "REGISTER",
+      detail: `${inr.fee} per player. The public registration link has not been published yet.`,
+    },
+    {
+      id: "qualifier",
+      title: "QUALIFIER",
+      detail: "6 December 2026, 9:00 AM–9:00 PM. Twelve hours, remote, jeopardy-style. Flags and a writeup are submitted so the run can be verified.",
+    },
+    {
+      id: "named",
+      title: "FINALISTS",
+      detail: "Named on 8 December 2026. Up to 35 teams from the leaderboard and up to 5 wildcard teams.",
+    },
+    {
+      id: "finals",
+      title: "FINALS",
+      detail: "26–27 December 2026. 10:00 AM on 26 December through 4:00 PM on 27 December. KLEF campus, Vaddeswaram. Up to 40 teams.",
+    },
+  ];
+  const selected = checkpoints.find((item) => item.id === active) ?? checkpoints[1];
+
   return (
     <section id="competition" className="sheet sheet-forest scroll-mt-24 border-t border-obsidian px-5 py-20 md:px-8 md:py-28">
       <div className="mx-auto max-w-6xl">
-        <p className="type-meta text-neon">03 / COMPETITION FORMAT</p>
+        <p className="type-meta text-cyan">03 / THE PROTOCOL</p>
         <h2 className="type-section mt-3 max-w-3xl">TWO DIMENSIONS. ONE CHALLENGE.</h2>
+        <div className="mission-map mt-8" role="tablist" aria-label="Competition stages">
+          {checkpoints.map((point) => (
+            <button
+              key={point.id}
+              type="button"
+              role="tab"
+              aria-selected={active === point.id}
+              className={`mission-node ${active === point.id ? "is-active" : ""}`}
+              onClick={() => setActive(point.id)}
+            >
+              {point.title}
+            </button>
+          ))}
+        </div>
+        <p className="type-small mt-4 max-w-3xl text-ink" role="tabpanel">
+          {selected.detail}
+        </p>
         <div className="mt-10 flex flex-col gap-4 md:flex-row md:items-stretch">
           <article className="terminal-panel reveal flex-1 border border-obsidian p-6" data-cursor="explore">
             <p className="type-meta text-muted">DIMENSION 01</p>

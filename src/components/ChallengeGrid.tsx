@@ -3,7 +3,7 @@ import { challenges } from "../content/event.ts";
 
 function PixelIcon({ rows }: { rows: readonly string[] }) {
   return (
-    <span className="grid grid-cols-5 gap-0.5" aria-hidden="true">
+    <span className="pixel-mark grid grid-cols-5 gap-0.5" aria-hidden="true">
       {rows.flatMap((row, rowIndex) =>
         row.split("").map((cell, columnIndex) => (
           <span
@@ -63,7 +63,7 @@ export function ChallengeGrid() {
   return (
     <section id="challenges" className="sheet scroll-mt-24 px-5 py-20 md:px-8 md:py-28">
       <div className="mx-auto max-w-6xl">
-        <p className="type-meta text-neon">02 / THE CHALLENGE GRID</p>
+        <p className="type-meta text-cyan">02 / CHALLENGE SECTORS</p>
         <h2 className="type-section mt-3 max-w-3xl">TEN DISCIPLINES. ONE GRID.</h2>
         <p className="type-body mt-5 max-w-2xl">
           From cryptographic puzzles to binary exploitation, every challenge tests a different way of thinking.
@@ -75,7 +75,7 @@ export function ChallengeGrid() {
           {challenges.map((challenge) => (
             <article
               key={challenge.id}
-              className="challenge-card reveal border border-obsidian bg-forest/50 p-4"
+              className={`challenge-card reveal sector-${challenge.id} border border-obsidian bg-forest/50 p-4`}
               data-cursor="explore"
             >
               <div className="flex items-start justify-between gap-3">

@@ -10,6 +10,7 @@
   --color-obsidian: #183627;
   --color-neon: #b6ff00;
   --color-cyan: #7cffe1;
+  --color-violet: #8d7cff;
   --color-ink: #f3f0e6;
   --color-muted: #8b9a90;
   --color-amber: #c6a15b;
@@ -1118,4 +1119,148 @@ body.intro-lock .cursor-spot {
   to {
     transform: rotate(360deg);
   }
+}
+
+.type-meta.text-cyan {
+  color: #7cffe1;
+}
+
+html.has-cursor.cursor-text,
+html.has-cursor.cursor-text * {
+  cursor: text !important;
+}
+
+html.cursor-text .cursor-dot,
+html.cursor-text .cursor-ring,
+html.cursor-text .cursor-spot {
+  opacity: 0;
+}
+
+.system-hud {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 35;
+  width: min(16rem, calc(100vw - 2rem));
+  padding: 0.85rem;
+  background: rgba(5, 8, 7, 0.88);
+  border: 1px solid rgba(182, 255, 0, 0.35);
+  backdrop-filter: blur(8px);
+}
+
+.hud-button {
+  min-height: 2rem;
+  padding: 0.35rem 0.55rem;
+  border: 1px solid #183627;
+  background: transparent;
+  color: #f3f0e6;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+}
+
+.hud-button[aria-pressed="true"],
+.mission-node.is-active,
+.vault-chamber.is-open .pedestal {
+  border-color: #b6ff00;
+  color: #b6ff00;
+  box-shadow: 0 0 16px rgba(182, 255, 0, 0.25);
+}
+
+.reactor-track {
+  height: 4px;
+  background: #183627;
+}
+
+.reactor-track span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #7cffe1, #b6ff00);
+}
+
+.mission-map {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+@media (min-width: 768px) {
+  .mission-map {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.mission-node {
+  min-height: 3rem;
+  border: 1px solid #183627;
+  background: rgba(5, 8, 7, 0.55);
+  color: #8b9a90;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+}
+
+.terminal-dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+  background: rgba(5, 8, 7, 0.72);
+}
+
+.terminal-dialog .terminal-panel {
+  width: min(40rem, 100%);
+  padding: 1.25rem;
+}
+
+.terminal-log {
+  max-height: 16rem;
+  overflow: auto;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.terminal-input {
+  width: 100%;
+  min-height: 2.75rem;
+  margin-top: 0.4rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #183627;
+  background: #050807;
+  color: #b6ff00;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.875rem;
+}
+
+.challenge-card.sector-01 { border-top: 2px solid #b6ff00; }
+.challenge-card.sector-02 { border-top: 2px solid #7cffe1; }
+.challenge-card.sector-03 { border-top: 2px solid #8d7cff; }
+.challenge-card.sector-04 { border-right: 2px solid #b6ff00; }
+.challenge-card.sector-05 { border-left: 2px solid #7cffe1; }
+.challenge-card.sector-06 { border-bottom: 2px solid #b6ff00; }
+.challenge-card.sector-07 { border-left: 2px solid #c6a15b; }
+.challenge-card.sector-08 { border-top: 2px dashed #b6ff00; }
+.challenge-card.sector-09 { border-top: 2px solid #7cffe1; border-bottom: 2px solid #8d7cff; }
+.challenge-card.sector-10 { border-top: 2px dotted #f3f0e6; }
+
+.challenge-card.sector-02 .pixel-mark { transform: rotate(8deg); }
+.challenge-card.sector-04 .pixel-mark { transform: scaleX(-1); }
+.challenge-card.sector-06 .pixel-mark { transform: rotate(45deg); }
+.challenge-card.sector-09 .pixel-mark { filter: hue-rotate(40deg); }
+
+html.breach .type-hero {
+  text-shadow: 0 0 28px rgba(141, 124, 255, 0.55);
+}
+
+html.perf-lite .cursor-spot,
+html.perf-lite .tunnel,
+html.perf-lite .challenge-card::after {
+  display: none;
+}
+
+body.intro-lock .system-hud,
+body.intro-lock .terminal-dialog {
+  display: none;
 }

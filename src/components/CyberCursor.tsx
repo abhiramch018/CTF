@@ -9,9 +9,19 @@ const labels: Record<string, string> = {
   join: "JOIN",
   explore: "EXPLORE",
   link: "",
-  view: "LOCK",
+  view: "ORBIT",
+  text: "",
   idle: "",
 };
+
+function nextMode(element: Element | null) {
+  if (!element) return "idle";
+  if (element.closest("input, textarea")) return "text";
+  const marked = element.closest("[data-cursor]")?.getAttribute("data-cursor");
+  if (marked) return marked;
+  if (element.closest("p, h1, h2, h3, li, dd, blockquote")) return "text";
+  return "idle";
+}
 
 export function CyberCursor({ reducedMotion }: CyberCursorProps) {
   const dot = useRef<HTMLDivElement>(null);
@@ -39,13 +49,14 @@ export function CyberCursor({ reducedMotion }: CyberCursorProps) {
       node.dataset.mode = next;
       const label = node.querySelector("span");
       if (label) label.textContent = labels[next] ?? "";
+      document.documentElement.classList.toggle("cursor-text", next === "text");
     };
 
     const onMove = (event: PointerEvent) => {
       point.x = event.clientX;
       point.y = event.clientY;
       const element = event.target instanceof Element ? event.target : null;
-      paintMode(element?.closest("[data-cursor]")?.getAttribute("data-cursor") ?? "idle");
+      paintMode(element?.closest("input, textarea") ? "text" : nextMode(element));
       const nextMagnet = element?.closest("[data-magnetic]");
       if (magnet && magnet !== nextMagnet) magnet.style.transform = "";
       magnet = nextMagnet instanceof HTMLElement ? nextMagnet : null;
@@ -82,6 +93,7 @@ export function CyberCursor({ reducedMotion }: CyberCursorProps) {
       window.removeEventListener("pointerleave", onLeave);
       if (magnet) magnet.style.transform = "";
       document.documentElement.classList.remove("has-cursor");
+      document.documentElement.classList.remove("cursor-text");
     };
   }, [reducedMotion]);
 
