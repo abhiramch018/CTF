@@ -47,7 +47,7 @@ export function Navbar({ settled }: NavbarProps) {
   return (
     <header className={`site-nav ${settled ? "is-ready" : "is-waiting"} ${scrolled || open ? "is-solid" : ""}`}>
       <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 md:px-8">
-        <a href="#top" className="flex items-center gap-2" aria-label="DEAD NOCTIS CTF home">
+        <a href="#top" className="flex items-center gap-2" aria-label="DEAD NOCTIS CTF home" data-cursor="view">
           <BrandLogo src={logos.gdg} alt="Google Developer Groups, KL Deemed to be University" />
           <BrandLogo src={logos.whh} alt="White Hat Hackers" />
           <span className="ml-1 hidden leading-tight sm:block">
@@ -57,7 +57,7 @@ export function Navbar({ settled }: NavbarProps) {
         </a>
         <nav className="ml-auto hidden items-center gap-6 md:flex" aria-label="Sections">
           {navLinks.map((link) => (
-            <a key={link.href} href={link.href} className="nav-link">
+            <a key={link.href} href={link.href} className="nav-link" data-cursor="link">
               {link.label}
             </a>
           ))}
@@ -89,6 +89,7 @@ export function Navbar({ settled }: NavbarProps) {
                 <a
                   href={link.href}
                   className="nav-link block py-3 text-ink"
+                  data-cursor="link"
                   onClick={() => setOpen(false)}
                 >
                   {link.label}

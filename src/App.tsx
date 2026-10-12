@@ -1,3 +1,4 @@
+import { CyberCursor } from "./components/CyberCursor.tsx";
 import { IntroSequence } from "./components/IntroSequence.tsx";
 import { LandingPage } from "./components/LandingPage.tsx";
 import { useIntroController } from "./hooks/useIntroController.ts";
@@ -23,6 +24,7 @@ export default function App() {
         locked={intro.overlay}
         reducedMotion={reducedMotion}
       />
+      <CyberCursor reducedMotion={reducedMotion} />
     </>
   );
 }

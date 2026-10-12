@@ -72,12 +72,16 @@ export function Hero({ settled, reducedMotion }: HeroProps) {
         </p>
         <h1 id="hero-title" tabIndex={-1} className="type-hero mt-5">
           <span className="block">DEAD NOCTIS</span>
-          <span className="block text-neon">CTF</span>
+          <span className="type-section mt-3 block text-neon">SEASON 01</span>
+          <span className="type-meta mt-4 block text-muted">CTF</span>
         </h1>
         <p className="type-kicker mt-5 max-w-xl">
           NATIONAL-LEVEL CYBERSECURITY CAPTURE THE FLAG
         </p>
-        <p className="type-meta mt-3 text-muted">SEASON 01 // ENTER THE DIMENSION</p>
+        <p className="terminal-line type-meta mt-3 text-neon">
+          <span>TX // CLASSIFIED CHANNEL OPEN</span>
+          <span className="terminal-caret" aria-hidden="true" />
+        </p>
         <div className="mt-8 grid max-w-xl gap-4 sm:grid-cols-2">
           <div className="border border-obsidian bg-void/70 p-4">
             <p className="type-meta text-neon">06 DECEMBER 2026</p>
@@ -91,10 +95,11 @@ export function Hero({ settled, reducedMotion }: HeroProps) {
           </div>
         </div>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-          <RegisterButton>ENTER THE DIMENSION</RegisterButton>
+          <RegisterButton>ENTER THE ARENA</RegisterButton>
           <button
             type="button"
             className="btn-ghost"
+            data-cursor="link"
             onClick={() =>
               document.getElementById("challenges")?.scrollIntoView({
                 behavior: reducedMotion ? "auto" : "smooth",

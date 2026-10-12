@@ -79,7 +79,7 @@ function Lights({
     <>
       <ambientLight color="#10241a" intensity={0.42} />
       <directionalLight color="#d7ece2" intensity={0.2} position={[5, 8, 7]} />
-      <pointLight ref={light} color="#39ff88" position={[0, 2.7, 1.5]} distance={15} decay={2} />
+      <pointLight ref={light} color="#b6ff00" position={[0, 2.7, 1.5]} distance={15} decay={2} />
     </>
   );
 }
@@ -130,7 +130,7 @@ function VoxelField({
         <meshStandardMaterial
           ref={materialRef}
           color="#143226"
-          emissive="#39ff88"
+          emissive="#b6ff00"
           emissiveIntensity={0.28}
           roughness={0.7}
           toneMapped={false}
@@ -184,7 +184,7 @@ function DriftParticles({
         <bufferAttribute attach="attributes-position" args={[positions, 3]} />
       </bufferGeometry>
       <pointsMaterial
-        color="#39ff88"
+        color="#b6ff00"
         size={0.05}
         sizeAttenuation
         transparent
@@ -216,6 +216,60 @@ function DepthLayer({
     group.position.z = hero * shift * 0.35;
   });
   return <group ref={ref}>{children}</group>;
+}
+
+function CyberCore({
+  portalY,
+  journey,
+  scrollLive,
+  reducedMotion,
+  motion,
+}: {
+  portalY: number;
+  journey: JourneyRef;
+  scrollLive: boolean;
+  reducedMotion: boolean;
+  motion: MotionRef;
+}) {
+  const group = useRef<Group>(null);
+
+  useFrame(({ clock }) => {
+    const node = group.current;
+    if (!node) return;
+    const intensity = motion.current?.intensity ?? 0;
+    const live = scrollLive && !reducedMotion;
+    const hero = live ? journey.current.hero : 0;
+    const px = live ? journey.current.pointerX : 0;
+    const py = live ? journey.current.pointerY : 0;
+    const assemble = reducedMotion ? 1 : Math.min(1, 0.2 + intensity);
+    node.scale.setScalar((0.2 + assemble * 0.8) * (1 - hero * 0.28));
+    node.rotation.y = clock.elapsedTime * (reducedMotion ? 0 : 0.28) + px * 0.4;
+    node.rotation.x = py * 0.22;
+    node.position.set(px * 0.18 + hero * 0.7, portalY, 0.35 - hero * 0.45);
+  });
+
+  return (
+    <group ref={group}>
+      <mesh>
+        <icosahedronGeometry args={[0.78, 1]} />
+        <meshBasicMaterial color="#b6ff00" wireframe transparent opacity={0.8} toneMapped={false} />
+      </mesh>
+      <mesh>
+        <octahedronGeometry args={[0.36, 0]} />
+        <meshStandardMaterial
+          color="#14180c"
+          emissive="#b6ff00"
+          emissiveIntensity={1.6}
+          roughness={0.35}
+          toneMapped={false}
+        />
+      </mesh>
+      <mesh rotation={[Math.PI / 2, 0, 0]}>
+        <torusGeometry args={[1.08, 0.012, 8, 40]} />
+        <meshBasicMaterial color="#7cffe1" transparent opacity={0.65} toneMapped={false} />
+      </mesh>
+    </group>
+  );
 }
 
 function ReadyProbe({ onReady }: { onReady: () => void }) {
@@ -254,11 +308,11 @@ export default function VoxelScene({
       }}
       frameloop={active ? "always" : "never"}
       onCreated={({ gl, camera }) => {
-        gl.setClearColor("#050806", 1);
+        gl.setClearColor("#050807", 1);
         camera.lookAt(0.15, 2.55, 0);
       }}
     >
-      <fog attach="fog" args={["#050806", 8, 23]} />
+      <fog attach="fog" args={["#050807", 8, 23]} />
       <CameraRig
         motion={motion}
         journey={journey}
@@ -274,6 +328,13 @@ export default function VoxelScene({
         <VoxelField matrices={layout.frame} tone="dark" />
         <VoxelField matrices={layout.accent} tone="accent" scrollLive={scrollLive} />
         <Portal motion={motion} spec={layout.portal} />
+        <CyberCore
+          portalY={layout.portal.y}
+          journey={journey}
+          scrollLive={scrollLive}
+          reducedMotion={reducedMotion}
+          motion={motion}
+        />
       </DepthLayer>
       <DepthLayer journey={journey} scrollLive={scrollLive} shift={0.55 * depthScale}>
         <VoxelField matrices={layout.foreground} tone="dark" />

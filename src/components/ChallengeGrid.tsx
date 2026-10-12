@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { challenges } from "../content/event.ts";
 
 function PixelIcon({ rows }: { rows: readonly string[] }) {
@@ -16,6 +17,49 @@ function PixelIcon({ rows }: { rows: readonly string[] }) {
 }
 
 export function ChallengeGrid() {
+  const grid = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const root = grid.current;
+    if (!root) return;
+    const fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!fine || reduced) return;
+
+    const cardFrom = (target: EventTarget | null) =>
+      target instanceof Element ? target.closest(".challenge-card") : null;
+
+    const onMove = (event: PointerEvent) => {
+      const card = cardFrom(event.target);
+      if (!(card instanceof HTMLElement)) return;
+      const rect = card.getBoundingClientRect();
+      const px = (event.clientX - rect.left) / rect.width;
+      const py = (event.clientY - rect.top) / rect.height;
+      card.style.setProperty("--tilt-x", `${(0.5 - py) * 7}deg`);
+      card.style.setProperty("--tilt-y", `${(px - 0.5) * 9}deg`);
+      card.style.setProperty("--glare-x", `${px * 100}%`);
+      card.style.setProperty("--glare-y", `${py * 100}%`);
+    };
+
+    const onOut = (event: PointerEvent) => {
+      const card = cardFrom(event.target);
+      if (!(card instanceof HTMLElement)) return;
+      const next = event.relatedTarget;
+      if (next instanceof Node && card.contains(next)) return;
+      card.style.removeProperty("--tilt-x");
+      card.style.removeProperty("--tilt-y");
+      card.style.removeProperty("--glare-x");
+      card.style.removeProperty("--glare-y");
+    };
+
+    root.addEventListener("pointermove", onMove);
+    root.addEventListener("pointerout", onOut);
+    return () => {
+      root.removeEventListener("pointermove", onMove);
+      root.removeEventListener("pointerout", onOut);
+    };
+  }, []);
+
   return (
     <section id="challenges" className="sheet scroll-mt-24 px-5 py-20 md:px-8 md:py-28">
       <div className="mx-auto max-w-6xl">
@@ -24,11 +68,15 @@ export function ChallengeGrid() {
         <p className="type-body mt-5 max-w-2xl">
           From cryptographic puzzles to binary exploitation, every challenge tests a different way of thinking.
         </p>
-        <div className="challenge-grid reveal-grid mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="tunnel" aria-hidden="true">
+          <span />
+        </div>
+        <div ref={grid} className="challenge-grid reveal-grid mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {challenges.map((challenge) => (
             <article
               key={challenge.id}
               className="challenge-card reveal border border-obsidian bg-forest/50 p-4"
+              data-cursor="explore"
             >
               <div className="flex items-start justify-between gap-3">
                 <PixelIcon rows={challenge.pixels} />

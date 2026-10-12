@@ -13,9 +13,9 @@ export function EventFooter({ reducedMotion }: EventFooterProps) {
       <div className="finale-scrim" aria-hidden="true" />
       <div className="relative z-[1] mx-auto max-w-6xl">
         <PortalFallback animate={!reducedMotion} compact />
-        <p className="type-meta mt-8 text-neon">05 / JOIN THE RUN</p>
-        <h2 className="type-finale mt-3">THE DIMENSION AWAITS.</h2>
-        <p className="type-body mt-4 text-ink">Your next flag is waiting to be found.</p>
+        <p className="type-meta mt-8 text-neon">05 / FINAL ACCESS</p>
+        <h2 className="type-finale mt-3">THE SYSTEM IS WAITING.</h2>
+        <p className="type-kicker mt-4">ARE YOU READY TO ENTER?</p>
         <div className="mt-8">
           <RegisterButton variant="footer">REGISTER</RegisterButton>
         </div>

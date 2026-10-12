@@ -14,17 +14,18 @@ const variantClass = {
 
 export function RegisterButton({ children, variant = "primary", className = "" }: RegisterButtonProps) {
   const classes = `${variantClass[variant]} ${className}`.trim();
+  const cursor = variant === "nav" ? "join" : "enter";
 
   if (registrationUrl) {
     return (
-      <a className={classes} href={registrationUrl} rel="noopener noreferrer">
+      <a className={classes} href={registrationUrl} rel="noopener noreferrer" data-cursor={cursor} data-magnetic="">
         {children}
       </a>
     );
   }
 
   return (
-    <button type="button" className={classes} aria-disabled="true">
+    <button type="button" className={classes} aria-disabled="true" data-cursor={cursor} data-magnetic="">
       <span>{children}</span>
       {variant === "nav" ? (
         <span className="sr-only">Registration link has not been published yet.</span>

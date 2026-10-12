@@ -22,7 +22,7 @@ export function CompetitionFormat() {
         <p className="type-meta text-neon">03 / COMPETITION FORMAT</p>
         <h2 className="type-section mt-3 max-w-3xl">TWO DIMENSIONS. ONE CHALLENGE.</h2>
         <div className="mt-10 flex flex-col gap-4 md:flex-row md:items-stretch">
-          <article className="reveal flex-1 border border-obsidian bg-void/70 p-6">
+          <article className="terminal-panel reveal flex-1 border border-obsidian p-6" data-cursor="explore">
             <p className="type-meta text-muted">DIMENSION 01</p>
             <h3 className="type-subhead mt-2">ONLINE QUALIFIER</h3>
             <ul className="type-small mt-5 space-y-2 text-ink">
@@ -45,7 +45,7 @@ export function CompetitionFormat() {
               </span>
             ))}
           </div>
-          <article className="reveal reveal-delay-2 flex-1 border border-neon/40 bg-void/70 p-6">
+          <article className="terminal-panel reveal reveal-delay-2 flex-1 border border-neon/40 p-6" data-cursor="explore">
             <p className="type-meta text-neon">DIMENSION 02</p>
             <h3 className="type-subhead mt-2">OFFLINE FINALS</h3>
             <ul className="type-small mt-5 space-y-2 text-ink">

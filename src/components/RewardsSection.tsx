@@ -53,6 +53,7 @@ export function RewardsSection() {
             <li
               key={podium.place}
               className={`reveal flex w-full max-w-xs flex-col items-center ${podium.order} ${index === 1 ? "" : index === 0 ? "reveal-delay-1" : "reveal-delay-2"}`}
+              data-cursor="explore"
             >
               <p className="type-meta text-neon">{podium.place}</p>
               <p className={`type-stat mt-2 ${"featured" in podium && podium.featured ? "is-featured-prize" : "is-ink"}`}>

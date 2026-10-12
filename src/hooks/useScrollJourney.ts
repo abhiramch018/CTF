@@ -34,9 +34,10 @@ export function useScrollJourney(enabled: boolean) {
           start: "top top",
           end: "bottom top",
           scrub: 0.55,
-          onUpdate: (self) => {
-            state.hero = self.progress;
-          },
+            onUpdate: (self) => {
+              state.hero = self.progress;
+              document.documentElement.style.setProperty("--journey-hero", self.progress.toFixed(3));
+            },
         }),
       );
     }
@@ -50,6 +51,21 @@ export function useScrollJourney(enabled: boolean) {
           scrub: 0.55,
           onUpdate: (self) => {
             state.finale = self.progress;
+          },
+        }),
+      );
+    }
+
+    const tunnel = document.getElementById("challenges");
+    if (tunnel) {
+      created.push(
+        ScrollTrigger.create({
+          trigger: tunnel,
+          start: "top bottom",
+          end: "top 30%",
+          scrub: 0.4,
+          onUpdate: (self) => {
+            document.documentElement.style.setProperty("--tunnel", self.progress.toFixed(3));
           },
         }),
       );
@@ -77,6 +93,8 @@ export function useScrollJourney(enabled: boolean) {
     return () => {
       if (finePointer) window.removeEventListener("pointermove", onPointerMove);
       document.documentElement.classList.remove("motion-ready");
+      document.documentElement.style.removeProperty("--journey-hero");
+      document.documentElement.style.removeProperty("--tunnel");
       created.forEach((trigger) => trigger.kill());
       state.hero = 0;
       state.finale = 0;
