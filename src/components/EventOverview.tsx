@@ -148,9 +148,10 @@ export function EventOverview({ reducedMotion }: EventOverviewProps) {
             </dl>
           </div>
         </div>
-        <p className="type-small mt-6 max-w-3xl border-l-2 border-amber pl-4">
-          Play fair. Attack only the systems the organisers provide. University systems, other teams, and outside
-          targets are off limits. The writeup deadline will be posted on the official channels. Fee {inr.fee} per player.
+        <p className="rule-note type-small">
+          <strong>Play fair.</strong> Attack only the systems the organisers provide. University systems, other teams,
+          and outside targets are off limits. The writeup deadline will be posted on the official channels. Fee{" "}
+          <strong>{inr.fee}</strong> per player.
         </p>
       </div>
       </div>

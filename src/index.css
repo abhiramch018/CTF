@@ -399,9 +399,9 @@ html.motion-ready .stage-trail.is-shown .trail-mark {
 }
 
 .brand-logo {
-  height: 2.6rem;
+  height: 1.55rem;
   width: auto;
-  max-width: 7rem;
+  max-width: 4.2rem;
   background: transparent;
   object-fit: contain;
   filter: drop-shadow(0 8px 16px rgba(1, 6, 4, 0.72));
@@ -460,8 +460,8 @@ html.motion-ready .stage-trail.is-shown .trail-mark {
   }
 
   .brand-logo {
-    height: 3.55rem;
-    max-width: 9.4rem;
+    height: 2.05rem;
+    max-width: 5.4rem;
   }
 
   .brand-name {
@@ -533,8 +533,8 @@ html.motion-ready .hero-mark {
   }
 
   .brand-logo {
-    height: 2.2rem;
-    max-width: 5.25rem;
+    height: 1.35rem;
+    max-width: 3.2rem;
   }
 
   .field-index ol {
@@ -1378,9 +1378,25 @@ html.cursor-text .cursor-spot {
   box-shadow: 0 0 16px rgba(82, 255, 154, 0.25);
 }
 
+.reactor {
+  background: rgba(1, 6, 4, 0.94);
+  border: 1px solid rgba(82, 255, 154, 0.32);
+  box-shadow: 0 16px 36px rgba(1, 6, 4, 0.55);
+}
+
+.reactor .type-meta,
+.reactor .text-muted {
+  color: #B5FFE0;
+}
+
+.reactor .type-stat {
+  color: #f7fffb;
+  text-shadow: 0 0 14px rgba(0, 240, 122, 0.28);
+}
+
 .reactor-track {
   height: 4px;
-  background: #00B85C;
+  background: rgba(5, 61, 36, 0.9);
 }
 
 .reactor-track span {
@@ -1480,6 +1496,23 @@ body.intro-lock .terminal-dialog {
 .section-copy {
   position: relative;
   z-index: 1;
+}
+
+.rule-note {
+  max-width: 46rem;
+  margin-top: 1.5rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(82, 255, 154, 0.28);
+  border-left: 3px solid #00F07A;
+  background: rgba(1, 6, 4, 0.94);
+  color: #f3f7f4;
+  font-weight: 500;
+  box-shadow: 0 14px 28px rgba(1, 6, 4, 0.45);
+}
+
+.rule-note strong {
+  color: #52FF9A;
+  font-weight: 700;
 }
 
 .hero-sheet,

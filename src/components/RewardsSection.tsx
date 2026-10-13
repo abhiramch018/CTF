@@ -86,7 +86,7 @@ export function RewardsSection() {
             </article>
           ))}
         </div>
-        <p className="type-small mt-6 border-l-2 border-amber pl-4 text-amber">
+        <p className="rule-note type-small">
           Internships, training, and other partner-linked benefits are announced only as each partner confirms them.
         </p>
       </div>
