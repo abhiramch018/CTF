@@ -6,9 +6,11 @@ import { RegisterButton } from "./RegisterButton.tsx";
 
 type EventFooterProps = {
   reducedMotion: boolean;
+  ctaLive: boolean;
+  instant: boolean;
 };
 
-export function EventFooter({ reducedMotion }: EventFooterProps) {
+export function EventFooter({ reducedMotion, ctaLive, instant }: EventFooterProps) {
   return (
     <footer id="register" className="chapter finale-sheet scroll-mt-24 border-t border-obsidian px-5 py-20 md:px-8">
       <div className="chapter-stage">
@@ -19,7 +21,12 @@ export function EventFooter({ reducedMotion }: EventFooterProps) {
         <p className="type-meta mt-8 text-neon">05 / FINAL ACCESS</p>
         <h2 className="type-finale mt-3">THE SYSTEM IS WAITING.</h2>
         <p className="type-kicker mt-4">ARE YOU READY TO ENTER?</p>
-        <div className="mt-8">
+        <div
+          className={`register-gate mt-8${ctaLive ? " is-live" : ""}${instant ? " is-instant" : ""}`}
+          inert={ctaLive ? undefined : true}
+          aria-hidden={ctaLive ? undefined : true}
+          data-cta={ctaLive ? "live" : "waiting"}
+        >
           <RegisterButton variant="footer">REGISTER</RegisterButton>
         </div>
         <dl className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

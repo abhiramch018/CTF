@@ -1,12 +1,14 @@
 import { useFrame } from "@react-three/fiber";
 import { useRef } from "react";
-import { Group, Mesh, MeshStandardMaterial } from "three";
+import { Group, Mesh, MeshBasicMaterial, MeshStandardMaterial } from "three";
+import type { MotionRef } from "../hooks/useIntroController.ts";
 
 type OperativeProps = {
   reducedMotion: boolean;
   detailed: boolean;
   position: [number, number, number];
   rotationY: number;
+  motion: MotionRef;
 };
 
 function Voxel({
@@ -37,28 +39,41 @@ function Voxel({
   );
 }
 
-export function Operative({ reducedMotion, detailed, position, rotationY }: OperativeProps) {
+export function Operative({ reducedMotion, detailed, position, rotationY, motion }: OperativeProps) {
   const root = useRef<Group>(null);
   const hood = useRef<Group>(null);
   const coat = useRef<Group>(null);
   const device = useRef<Mesh>(null);
+  const beam = useRef<Mesh>(null);
   const baseY = position[1];
 
   useFrame(({ clock }) => {
     const time = clock.elapsedTime;
+    const action = reducedMotion ? 0 : (motion.current?.action ?? 0);
     const breathe = reducedMotion ? 0 : Math.sin(time * 1.25);
     if (root.current) {
       root.current.position.y = baseY + breathe * 0.018;
       root.current.rotation.z = breathe * 0.012;
+      root.current.rotation.y = rotationY - action * 0.18;
     }
-    if (hood.current && !reducedMotion) hood.current.rotation.y = Math.sin(time * 0.42) * 0.07;
+    if (hood.current) hood.current.rotation.y = reducedMotion ? 0 : Math.sin(time * 0.42) * 0.07 - action * 0.46;
     if (coat.current && !reducedMotion) {
-      coat.current.rotation.x = Math.sin(time * 0.9) * 0.035;
+      coat.current.rotation.x = Math.sin(time * 0.9) * 0.035 + action * 0.04;
       coat.current.rotation.z = Math.sin(time * 0.7) * 0.02;
     }
-    const lamp = device.current?.material;
-    if (lamp instanceof MeshStandardMaterial && !reducedMotion) {
-      lamp.emissiveIntensity = 0.85 + Math.sin(time * 3.1) * 0.35;
+    if (device.current) {
+      device.current.position.z = 0.42 + action * 0.18;
+      device.current.position.y = 0.68 + action * 0.06;
+      const lamp = device.current.material;
+      if (lamp instanceof MeshStandardMaterial) {
+        lamp.emissiveIntensity = reducedMotion ? 0.55 : 0.28 + action * 1.55 + Math.sin(time * 6.2) * 0.22 * Math.max(action, 0.15);
+      }
+    }
+    if (beam.current) {
+      beam.current.visible = action > 0.05;
+      beam.current.scale.set(0.4 + action, 0.45 + action * 0.4, 0.2 + action * 1.65);
+      const surface = beam.current.material;
+      if (surface instanceof MeshBasicMaterial) surface.opacity = action * 0.45;
     }
   });
 
@@ -83,7 +98,11 @@ export function Operative({ reducedMotion, detailed, position, rotationY }: Oper
       <Voxel position={[0.48, 0.88, 0.22]} size={[0.12, 0.34, 0.12]} color="#0a3a24" />
       <mesh ref={device} position={[0.5, 0.68, 0.42]}>
         <boxGeometry args={[0.1, 0.08, 0.16]} />
-        <meshStandardMaterial color="#053D24" emissive="#52FF9A" emissiveIntensity={1} roughness={0.35} toneMapped={false} />
+        <meshStandardMaterial color="#053D24" emissive="#52FF9A" emissiveIntensity={0.35} roughness={0.35} toneMapped={false} />
+      </mesh>
+      <mesh ref={beam} position={[0.05, 0.78, 0.2]} rotation={[0.42, -0.85, 0.05]} visible={false}>
+        <boxGeometry args={[0.045, 0.03, 1.25]} />
+        <meshBasicMaterial color="#52FF9A" transparent opacity={0} depthWrite={false} toneMapped={false} />
       </mesh>
       <group ref={hood} position={[0, 1.42, 0.03]}>
         <Voxel position={[0, 0, 0]} size={[0.3, 0.28, 0.28]} color="#010604" />

@@ -228,6 +228,8 @@ function DriftParticles({
       group.current.position.x += (journey.current.pointerX * 0.18 - group.current.position.x) * 0.05;
       group.current.position.y += (-journey.current.pointerY * 0.08 - group.current.position.y) * 0.05;
     }
+    const pointsMaterial = ref.current?.material;
+    if (pointsMaterial && !Array.isArray(pointsMaterial)) pointsMaterial.opacity = 0.12 + activity * 0.58;
     if (activity <= 0.02) return;
     const attribute = ref.current?.geometry.getAttribute("position");
     if (!(attribute instanceof BufferAttribute)) return;
@@ -293,7 +295,11 @@ export default function VoxelScene({
       onCreated={({ gl, camera }) => {
         gl.setClearColor("#010604", 1);
         gl.toneMappingExposure = 1.35;
-        camera.lookAt(0.15, 2.55, 0);
+        const current = motion.current;
+        if (current) {
+          camera.position.set(current.x, current.y, current.z);
+          camera.lookAt(0.15, current.lookY, -0.35);
+        }
       }}
     >
       <fog attach="fog" args={["#010604", 7, 28]} />
@@ -310,20 +316,24 @@ export default function VoxelScene({
           detailed={detailed}
           position={[layout.operative.x, layout.operative.y, layout.operative.z]}
           rotationY={layout.operative.rotY}
+          motion={motion}
         />
         <VoxelFragments
           portal={layout.portal}
           journey={journey}
           scrollLive={scrollLive}
           count={detailed ? 28 : 12}
+          motion={motion}
+          reducedMotion={reducedMotion}
         />
         <PacketRoutes
           routes={layout.routes}
           reducedMotion={reducedMotion}
           count={detailed ? 48 : 18}
           journey={journey}
+          motion={motion}
         />
-        <SignalLife reducedMotion={reducedMotion} detailed={detailed} />
+        <SignalLife reducedMotion={reducedMotion} detailed={detailed} motion={motion} />
         <DriftParticles
           count={detailed ? 80 : 28}
           motion={motion}

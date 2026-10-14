@@ -7,10 +7,12 @@ type IntroSequenceProps = {
   onSkip: () => void;
 };
 
-const terminalLines = [
-  "INITIALIZING SECURE DIMENSION...",
-  "ESTABLISHING CONNECTION...",
-  "ACCESS GRANTED",
+const terminalLines = ["CARRIER // ENCRYPTED", "BOOT // SECTOR S01", "WORLD LINK STABLE"];
+
+const noiseRows = [
+  "7A 1C  █░▓░  4E 90  //  00 F0  ▓█  C3",
+  "B5  ░█  21 8D  ▓░  FF  03  ░▓  6C 1A",
+  "E0  █▓  44  09  ░░  7F  █░  D2  18  5B",
 ];
 
 export function IntroSequence({ phase, reducedMotion, onSkip }: IntroSequenceProps) {
@@ -30,26 +32,18 @@ export function IntroSequence({ phase, reducedMotion, onSkip }: IntroSequencePro
 
   return (
     <div className="intro-overlay" data-phase={phase} data-reduced={reducedMotion ? "true" : "false"}>
-      <div className="intro-flash" />
-      <div className="pixel-dissolve" />
-      <div className="signal-ring" aria-hidden="true" />
+      <div className="signal-noise" aria-hidden="true">
+        {noiseRows.map((row) => (
+          <span key={row}>{row}</span>
+        ))}
+      </div>
       <p className="terminal" aria-live="polite">
         {terminalLines.map((line) => (
-          <span key={line} className={line === "ACCESS GRANTED" ? "term-line is-granted" : "term-line"}>
+          <span key={line} className={line === "WORLD LINK STABLE" ? "term-line is-granted" : "term-line"}>
             {line}
           </span>
         ))}
       </p>
-      <div className="intro-title-block">
-        <p className="intro-kicker">KL UNIVERSITY × GDG × WHITE HAT HACKERS</p>
-        <p className="intro-title">
-          <span className="intro-line">DEAD</span>
-          <span className="intro-line intro-line-delay">NOCTIS</span>
-        </p>
-        <p className="intro-ctf">CTF</p>
-        <p className="intro-sub">NATIONAL-LEVEL CYBERSECURITY CAPTURE THE FLAG</p>
-        <p className="intro-meta">SEASON 01 // DIMENSION INITIALIZED</p>
-      </div>
       <button ref={skipRef} type="button" className="skip-intro" onClick={onSkip}>
         SKIP INTRO
       </button>

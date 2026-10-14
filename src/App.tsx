@@ -23,6 +23,7 @@ export default function App() {
         phase={intro.phase}
         locked={intro.overlay}
         reducedMotion={reducedMotion}
+        instant={intro.instant}
       />
       <CyberCursor reducedMotion={reducedMotion} />
     </>

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { IntroPhase, MotionRef } from "../hooks/useIntroController.ts";
+import { phaseAtLeast, type IntroPhase, type MotionRef } from "../hooks/useIntroController.ts";
 import { useScrollJourney } from "../hooks/useScrollJourney.ts";
 import { Atmosphere } from "./Atmosphere.tsx";
 import { ChallengeGrid } from "./ChallengeGrid.tsx";
@@ -15,13 +15,15 @@ type LandingPageProps = {
   phase: IntroPhase;
   locked: boolean;
   reducedMotion: boolean;
+  instant: boolean;
 };
 
-export function LandingPage({ motion, phase, locked, reducedMotion }: LandingPageProps) {
+export function LandingPage({ motion, phase, locked, reducedMotion, instant }: LandingPageProps) {
   const [tabHidden, setTabHidden] = useState(false);
   const wasLocked = useRef(locked);
-  const settled = phase === "transition" || phase === "done";
+  const settled = instant || phaseAtLeast(phase, "details");
   const scrollLive = phase === "done" && !reducedMotion;
+  const ctaLive = instant || phaseAtLeast(phase, "register");
   const journey = useScrollJourney(scrollLive);
 
   useEffect(() => {
@@ -76,13 +78,13 @@ export function LandingPage({ motion, phase, locked, reducedMotion }: LandingPag
       <Atmosphere reducedMotion={reducedMotion} />
       <Navbar settled={settled} reducedMotion={reducedMotion} />
       <main id="main">
-        <Hero settled={settled} reducedMotion={reducedMotion} />
+        <Hero phase={phase} instant={instant} reducedMotion={reducedMotion} />
         <EventOverview reducedMotion={reducedMotion} />
         <ChallengeGrid />
         <CompetitionFormat />
         <RewardsSection />
       </main>
-      <EventFooter reducedMotion={reducedMotion} />
+      <EventFooter reducedMotion={reducedMotion} ctaLive={ctaLive} instant={instant} />
     </div>
   );
 }

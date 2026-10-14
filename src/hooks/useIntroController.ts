@@ -3,7 +3,30 @@ import gsap from "gsap";
 
 export const INTRO_STORAGE_KEY = "dead-noctis-s01-intro";
 
-export type IntroPhase = "void" | "portal" | "title" | "transition" | "done";
+export type IntroPhase =
+  | "void"
+  | "portal"
+  | "action"
+  | "title"
+  | "details"
+  | "register"
+  | "transition"
+  | "done";
+
+const PHASE_RANK: Record<IntroPhase, number> = {
+  void: 0,
+  portal: 1,
+  action: 2,
+  title: 3,
+  details: 4,
+  register: 5,
+  transition: 6,
+  done: 7,
+};
+
+export function phaseAtLeast(phase: IntroPhase, target: IntroPhase) {
+  return PHASE_RANK[phase] >= PHASE_RANK[target];
+}
 
 export type SceneMotion = {
   x: number;
@@ -13,6 +36,7 @@ export type SceneMotion = {
   intensity: number;
   particles: number;
   drift: number;
+  action: number;
 };
 
 export type MotionRef = RefObject<SceneMotion>;
@@ -26,6 +50,7 @@ export function heroMotion(reducedMotion: boolean): SceneMotion {
     intensity: 1,
     particles: reducedMotion ? 0 : 1,
     drift: reducedMotion ? 0 : 1,
+    action: 1,
   };
 }
 
@@ -35,9 +60,10 @@ function distantMotion(): SceneMotion {
     y: 2.4,
     z: 12.5,
     lookY: 2.55,
-    intensity: 0.05,
-    particles: 0.15,
+    intensity: 0.06,
+    particles: 0.16,
     drift: 0,
+    action: 0,
   };
 }
 
@@ -49,6 +75,7 @@ function applyMotion(target: SceneMotion, next: SceneMotion) {
   target.intensity = next.intensity;
   target.particles = next.particles;
   target.drift = next.drift;
+  target.action = next.action;
 }
 
 function introAlreadySeen() {
@@ -59,15 +86,24 @@ function introAlreadySeen() {
   }
 }
 
+function rememberIntro() {
+  try {
+    sessionStorage.setItem(INTRO_STORAGE_KEY, "1");
+  } catch {
+    // Private browsing can block storage. The intro still ends.
+  }
+}
+
 export function useIntroController(reducedMotion: boolean) {
   const seen = introAlreadySeen();
-  const motion = useRef<SceneMotion>(seen || reducedMotion ? heroMotion(reducedMotion) : distantMotion());
-  const [phase, setPhase] = useState<IntroPhase>(seen ? "done" : reducedMotion ? "title" : "void");
-  const [overlay, setOverlay] = useState(!seen);
-  const finished = useRef(seen);
+  const bypass = seen || reducedMotion;
+  const motion = useRef<SceneMotion>(bypass ? heroMotion(reducedMotion) : distantMotion());
+  const [phase, setPhase] = useState<IntroPhase>(bypass ? "done" : "void");
+  const [overlay, setOverlay] = useState(!bypass);
+  const [cut, setCut] = useState(bypass);
+  const finished = useRef(bypass);
   const timelineRef = useRef<gsap.core.Timeline | null>(null);
   const safetyRef = useRef(0);
-  const fadeRef = useRef(0);
   const reducedRef = useRef(reducedMotion);
   const startedReduced = useRef(reducedMotion);
   const alive = useRef(true);
@@ -76,24 +112,22 @@ export function useIntroController(reducedMotion: boolean) {
     reducedRef.current = reducedMotion;
   }, [reducedMotion]);
 
-  const finish = useCallback(() => {
+  const finish = useCallback((options?: { cut?: boolean }) => {
     if (finished.current) return;
     finished.current = true;
     timelineRef.current?.kill();
     timelineRef.current = null;
     window.clearTimeout(safetyRef.current);
-    window.clearTimeout(fadeRef.current);
-    try {
-      sessionStorage.setItem(INTRO_STORAGE_KEY, "1");
-    } catch {
-      // Private browsing can block storage. The intro still ends.
-    }
+    rememberIntro();
     applyMotion(motion.current, heroMotion(reducedRef.current));
     if (!alive.current) return;
+    if (options?.cut) setCut(true);
     setPhase("done");
     setOverlay(false);
     document.body.classList.remove("intro-lock");
   }, []);
+
+  const skip = useCallback(() => finish({ cut: true }), [finish]);
 
   useEffect(() => {
     alive.current = true;
@@ -103,17 +137,15 @@ export function useIntroController(reducedMotion: boolean) {
   }, []);
 
   useEffect(() => {
+    if (!bypass) return;
+    rememberIntro();
+    document.body.classList.remove("intro-lock");
+  }, [bypass]);
+
+  useEffect(() => {
     if (finished.current || introAlreadySeen()) return;
 
     document.body.classList.add("intro-lock");
-
-    if (reducedRef.current) {
-      fadeRef.current = window.setTimeout(finish, 700);
-      return () => {
-        window.clearTimeout(fadeRef.current);
-        document.body.classList.remove("intro-lock");
-      };
-    }
 
     const mark = (next: IntroPhase, at: number) => {
       timeline.call(
@@ -125,31 +157,65 @@ export function useIntroController(reducedMotion: boolean) {
       );
     };
 
-    const timeline = gsap.timeline({ onComplete: finish });
+    const timeline = gsap.timeline({ onComplete: () => finish() });
     timelineRef.current = timeline;
     timeline.to(
       motion.current,
-      { intensity: 0.4, particles: 0.55, z: 10.5, duration: 1.15, ease: "power1.out" },
+      { intensity: 0.34, particles: 0.46, z: 11.05, y: 2.28, lookY: 2.52, duration: 0.7, ease: "power1.out" },
       0,
     );
-    mark("portal", 1.15);
+    mark("portal", 0.7);
     timeline.to(
       motion.current,
-      { intensity: 1, particles: 1, z: 8.25, y: 2.02, duration: 1.6, ease: "power2.inOut" },
-      1.15,
+      {
+        intensity: 0.74,
+        particles: 0.82,
+        z: 8.85,
+        y: 2.08,
+        lookY: 2.48,
+        duration: 0.75,
+        ease: "power2.inOut",
+      },
+      0.7,
     );
-    mark("title", 2.45);
-    mark("transition", 4.3);
-    timeline.to(motion.current, { z: 7.45, y: 1.86, duration: 1.15, ease: "power2.inOut" }, 4.3);
+    mark("action", 1.45);
+    timeline.to(
+      motion.current,
+      {
+        intensity: 1,
+        particles: 1,
+        action: 1,
+        z: 8.15,
+        y: 1.98,
+        lookY: 2.46,
+        duration: 0.9,
+        ease: "power2.inOut",
+      },
+      1.45,
+    );
+    mark("title", 2.35);
+    timeline.to(
+      motion.current,
+      { z: 7.7, y: 1.92, lookY: 2.45, duration: 0.85, ease: "power1.inOut" },
+      2.35,
+    );
+    mark("details", 3.2);
+    timeline.to(motion.current, { z: 7.55, y: 1.88, duration: 0.85, ease: "power1.inOut" }, 3.2);
+    mark("register", 4.05);
+    timeline.to(
+      motion.current,
+      { z: 7.45, y: 1.86, lookY: 2.45, intensity: 1, particles: 1, action: 1, duration: 0.7, ease: "power2.inOut" },
+      4.05,
+    );
     timeline.call(
       () => {
         motion.current.drift = reducedRef.current ? 0 : 1;
       },
       [],
-      5.35,
+      4.7,
     );
-    timeline.to({}, { duration: 0.35 }, 5.4);
-    safetyRef.current = window.setTimeout(finish, 8000);
+    timeline.to({}, { duration: 0.45 }, 4.75);
+    safetyRef.current = window.setTimeout(() => finish(), 7000);
 
     return () => {
       timeline.kill();
@@ -160,8 +226,8 @@ export function useIntroController(reducedMotion: boolean) {
 
   useEffect(() => {
     if (!reducedMotion || startedReduced.current || finished.current) return;
-    finish();
+    finish({ cut: true });
   }, [reducedMotion, finish]);
 
-  return { phase, overlay, motion, skip: finish };
+  return { phase, overlay, motion, skip, instant: cut };
 }
