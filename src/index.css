@@ -1613,12 +1613,16 @@ body.intro-lock .terminal-dialog {
 .hero-mark {
   position: relative;
   margin: 0;
-  font-family: "Outfit", ui-monospace, monospace;
+  font-family: "Outfit", "Segoe UI", sans-serif;
   font-size: clamp(3.3rem, 7.6vw, 7.2rem);
-  font-weight: 400;
+  font-weight: 600;
+  letter-spacing: -0.035em;
   line-height: 0.84;
   color: #F8F7FF;
-  text-shadow: 0 10px 28px rgba(5, 3, 10, 0.72);
+  text-shadow:
+    0 1px 0 rgba(196, 181, 253, 0.4),
+    0 12px 26px rgba(5, 3, 10, 0.8),
+    0 0 16px rgba(124, 58, 237, 0.16);
 }
 
 .hero-zone {
@@ -1894,16 +1898,38 @@ body.intro-lock .terminal-dialog {
   visibility: visible;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  .hero-copy.show-title .ghost-word-hero {
+    animation: ghost-depth 16s ease-in-out infinite alternate;
+  }
+}
+
 .glyph-line {
+  position: relative;
   display: block;
   opacity: 0;
-  clip-path: inset(40% 72% 40% 0);
-  transform: translate3d(-28px, 18px, 0) skewX(12deg);
-  filter: blur(1px);
+  clip-path: inset(0 100% 0 0);
+  filter: blur(8px);
+}
+
+.glyph-line::after {
+  content: "";
+  position: absolute;
+  inset: -4% 0;
+  background: linear-gradient(100deg, transparent 36%, rgba(248, 247, 255, 0.7) 50%, transparent 64%);
+  mix-blend-mode: soft-light;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-120%);
 }
 
 .hero-copy.show-title .glyph-line {
-  animation: line-assemble 0.74s steps(8, end) forwards;
+  animation: title-materialize 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: var(--glyph-delay, 0s);
+}
+
+.hero-copy.show-title .glyph-line::after {
+  animation: title-sheen 1.05s ease forwards;
   animation-delay: var(--glyph-delay, 0s);
 }
 
@@ -1921,13 +1947,13 @@ body.intro-lock .terminal-dialog {
 }
 
 .hero-copy.show-title .portal-cast {
-  animation: cast-beam 1.05s steps(6, end) both;
+  animation: cast-beam 1.05s ease-out both;
 }
 
 .hero-copy.show-details .hero-side,
 .hero-copy.show-details .hero-detail {
   visibility: visible;
-  animation: detail-lock 0.5s steps(6, end) both;
+  animation: detail-lock 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .hero-copy.show-details .delay-1 { animation-delay: 0.04s; }
@@ -1947,6 +1973,7 @@ body.intro-lock .terminal-dialog {
   filter: none;
 }
 
+.hero-copy.is-instant .glyph-line::after,
 .hero-copy.is-instant .portal-cast {
   animation: none;
   opacity: 0;
@@ -1966,7 +1993,7 @@ body.intro-lock .terminal-dialog {
 }
 
 .register-gate.is-live .register-command {
-  animation: terminal-unlock 0.88s steps(9, end) both;
+  animation: terminal-unlock 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .register-gate.is-live:not(.is-instant)::after {
@@ -1976,9 +2003,9 @@ body.intro-lock .terminal-dialog {
   right: 0;
   z-index: 2;
   height: 2px;
-  background: #C4B5FD;
-  box-shadow: 0 0 12px rgba(240, 44, 183, 0.85);
-  animation: cta-scan 0.72s steps(8, end) both;
+  background: linear-gradient(90deg, transparent, #A855F7 40%, #F02CB7 60%, transparent);
+  box-shadow: 0 0 12px rgba(240, 44, 183, 0.55);
+  animation: cta-scan 0.85s ease-out both;
   pointer-events: none;
 }
 
@@ -2024,6 +2051,42 @@ a.register-command:hover {
   background: #17114A;
   color: #F8F7FF;
   cursor: pointer;
+}
+
+@keyframes title-materialize {
+  0% {
+    opacity: 0;
+    clip-path: inset(0 100% 0 0);
+    filter: blur(8px);
+  }
+  100% {
+    opacity: 1;
+    clip-path: inset(0);
+    filter: none;
+  }
+}
+
+@keyframes title-sheen {
+  0% {
+    opacity: 0;
+    transform: translateX(-120%);
+  }
+  28% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(130%);
+  }
+}
+
+@keyframes ghost-depth {
+  from {
+    transform: translate3d(calc(var(--px, 0) * 12px), calc(var(--py, 0) * 7px), 0);
+  }
+  to {
+    transform: translate3d(calc(var(--px, 0) * 12px - 14px), calc(var(--py, 0) * 7px - 18px), 0);
+  }
 }
 
 @keyframes line-assemble {
@@ -2386,6 +2449,56 @@ a.register-command:hover {
   justify-self: end;
 }
 
+.portal-fallback:not(.is-compact) .css-portal__stage {
+  position: absolute;
+  top: 14%;
+  right: 7%;
+  width: min(34vw, 420px);
+  height: min(62vh, 520px);
+}
+
+.css-portal__visor,
+.css-portal__ring,
+.css-portal__scan {
+  position: absolute;
+  pointer-events: none;
+}
+
+.css-portal__visor {
+  left: 16%;
+  top: 16%;
+  width: 68%;
+  height: 58%;
+  border-radius: 48% 48% 44% 44%;
+  background:
+    radial-gradient(ellipse at 50% 46%, rgba(240, 44, 183, 0.22), transparent 16%),
+    radial-gradient(ellipse at 50% 48%, #0B1240 0%, #17114A 42%, rgba(5, 3, 10, 0.15) 74%);
+  box-shadow:
+    inset 0 0 36px rgba(124, 58, 237, 0.32),
+    0 0 48px rgba(124, 58, 237, 0.18);
+}
+
+.css-portal__ring {
+  left: 8%;
+  top: 18%;
+  width: 84%;
+  height: 54%;
+  border: 1px solid rgba(64, 191, 255, 0.32);
+  border-radius: 50%;
+}
+
+.css-portal__scan {
+  left: 28%;
+  top: 42%;
+  width: 44%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #C4B5FD, transparent);
+}
+
+.portal-fallback.is-animated .css-portal__scan {
+  animation: visor-scan 12s ease-in-out infinite;
+}
+
 .css-portal__core {
   position: absolute;
   top: 22%;
@@ -2396,6 +2509,28 @@ a.register-command:hover {
   background:
     radial-gradient(circle, rgba(240, 44, 183, 0.42), rgba(124, 58, 237, 0.16) 46%, transparent 70%);
   box-shadow: 0 0 48px rgba(124, 58, 237, 0.28);
+}
+
+.portal-fallback:not(.is-compact) .css-portal__core {
+  display: none;
+}
+
+@keyframes visor-scan {
+  0%, 72% { top: 28%; opacity: 0; }
+  78% { opacity: 0.8; }
+  92% { top: 62%; opacity: 0.35; }
+  100% { top: 66%; opacity: 0; }
+}
+
+@media (max-width: 760px) {
+  .portal-fallback:not(.is-compact) .css-portal__stage {
+    top: 7%;
+    right: auto;
+    left: 50%;
+    width: min(68vw, 260px);
+    height: 42vh;
+    transform: translateX(-36%);
+  }
 }
 
 .nexus-fallback-item.is-open {

@@ -32,7 +32,20 @@ export function useScrollJourney(enabled: boolean) {
     state.pointerX = 0;
     state.pointerY = 0;
 
-    if (!enabled) return;
+    const finePointer = window.matchMedia("(pointer: fine)").matches;
+    const onPointerMove = (event: PointerEvent) => {
+      state.pointerX = (event.clientX / window.innerWidth) * 2 - 1;
+      state.pointerY = (event.clientY / window.innerHeight) * 2 - 1;
+      document.documentElement.style.setProperty("--px", state.pointerX.toFixed(3));
+      document.documentElement.style.setProperty("--py", state.pointerY.toFixed(3));
+    };
+    if (finePointer) window.addEventListener("pointermove", onPointerMove, { passive: true });
+
+    if (!enabled) {
+      return () => {
+        if (finePointer) window.removeEventListener("pointermove", onPointerMove);
+      };
+    }
 
     const hero = document.getElementById("top");
     const finale = document.getElementById("register");
@@ -104,16 +117,11 @@ export function useScrollJourney(enabled: boolean) {
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
 
-    const finePointer = window.matchMedia("(pointer: fine)").matches;
-    const onPointerMove = (event: PointerEvent) => {
-      state.pointerX = (event.clientX / window.innerWidth) * 2 - 1;
-      state.pointerY = (event.clientY / window.innerHeight) * 2 - 1;
-    };
-    if (finePointer) window.addEventListener("pointermove", onPointerMove, { passive: true });
-
     return () => {
       window.removeEventListener("scroll", onScroll);
       if (finePointer) window.removeEventListener("pointermove", onPointerMove);
+      document.documentElement.style.removeProperty("--px");
+      document.documentElement.style.removeProperty("--py");
       document.documentElement.classList.remove("motion-ready");
       document.documentElement.style.removeProperty("--journey-hero");
       document.documentElement.style.removeProperty("--tunnel");

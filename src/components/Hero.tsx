@@ -17,37 +17,31 @@ type HeroProps = {
   reducedMotion: boolean;
 };
 
-const GLYPHS = "01#/<>█▓░ABCDEF";
-
-function cipherOf(text: string) {
-  return "░".repeat(text.length);
-}
+const CIPHER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 function useDecoded(text: string, active: boolean, instant: boolean) {
-  const [value, setValue] = useState(() => (instant ? text : cipherOf(text)));
+  const [value, setValue] = useState(text);
 
   useEffect(() => {
-    if (!active) return;
-    if (instant) {
+    if (!active || instant) {
       setValue(text);
       return;
     }
     let step = 0;
     const timer = window.setInterval(() => {
       step += 1;
-      const locked = Math.min(text.length, Math.floor(step / 2));
+      const locked = Math.min(text.length, step);
       let next = "";
       for (let index = 0; index < text.length; index += 1) {
         if (index < locked) next += text[index];
-        else next += GLYPHS[Math.floor(Math.random() * GLYPHS.length)] ?? "0";
+        else next += CIPHER[Math.floor(Math.random() * CIPHER.length)] ?? "A";
       }
       setValue(next);
       if (locked >= text.length) window.clearInterval(timer);
-    }, 48);
+    }, 42);
     return () => window.clearInterval(timer);
   }, [active, instant, text]);
 
-  if (!active) return cipherOf(text);
   return value;
 }
 

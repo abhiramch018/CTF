@@ -1,12 +1,16 @@
-import { Canvas, useFrame } from "@react-three/fiber";
-import { useMemo, useRef, useState, type ReactNode } from "react";
-import { BufferAttribute, Group, Points } from "three";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
+import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
+import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
+import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
+import { ACESFilmicToneMapping, BufferAttribute, Group, Points, Vector2 } from "three";
 import type { MotionRef } from "../hooks/useIntroController.ts";
 import type { SceneJourney } from "../hooks/useScrollJourney.ts";
 import { buildScene, sceneQuality, type SceneQuality } from "../lib/sceneLayout.ts";
 import { PacketRoutes } from "./WorldLife.tsx";
 import { Portal } from "./Portal.tsx";
-import { EncryptedCore, NetworkTopology } from "./SecurityField.tsx";
+import { NetworkTopology, SecuritySentinel, SENTINEL_POSITION } from "./SecurityField.tsx";
 
 type JourneyRef = { current: SceneJourney };
 
@@ -82,24 +86,28 @@ function CameraRig({
     const drift = reducedMotion ? 0 : current.drift;
     const time = clock.elapsedTime;
     const live = scrollLive && !reducedMotion;
-    pointer.current.x += ((live ? journey.current.pointerX : 0) - pointer.current.x) * 0.05;
-    pointer.current.y += ((live ? journey.current.pointerY : 0) - pointer.current.y) * 0.05;
+    const aim = live ? 1 : drift;
+    pointer.current.x += ((aim ? journey.current.pointerX : 0) - pointer.current.x) * 0.035;
+    pointer.current.y += ((aim ? journey.current.pointerY : 0) - pointer.current.y) * 0.035;
+    const heroWeight = live ? 1 - Math.min(1, journey.current.depth * 2.4) : 1;
+    const swayX = pointer.current.x * (0.06 + heroWeight * 0.16) * aim;
+    const swayY = pointer.current.y * (0.03 + heroWeight * 0.05) * aim;
     if (!live) {
       camera.position.set(
-        current.x + Math.sin(time * 0.12) * 0.1 * drift,
-        current.y + Math.sin(time * 0.08) * 0.04 * drift,
+        current.x + Math.sin(time * 0.12) * 0.1 * drift + swayX,
+        current.y + Math.sin(time * 0.08) * 0.04 * drift - swayY,
         current.z,
       );
-      camera.lookAt(0.15, current.lookY, -0.35);
+      camera.lookAt(0.15 + swayX * 0.35, current.lookY - swayY * 0.25, -0.35);
       return;
     }
     const pose = samplePath(journey.current.depth);
     camera.position.set(
-      pose.x + Math.sin(time * 0.12) * 0.05 * drift + pointer.current.x * 0.1,
-      pose.y + Math.sin(time * 0.08) * 0.03 * drift - pointer.current.y * 0.04,
+      pose.x + Math.sin(time * 0.12) * 0.05 * drift + swayX,
+      pose.y + Math.sin(time * 0.08) * 0.03 * drift - swayY,
       pose.z,
     );
-    camera.lookAt(pose.lx + pointer.current.x * 0.05, pose.ly, pose.lz);
+    camera.lookAt(pose.lx + swayX * 0.28, pose.ly, pose.lz);
   });
   return null;
 }
@@ -118,9 +126,9 @@ function Lights({
   useFrame(({ clock }) => {
     const lamp = portalLight.current;
     if (!lamp || !motion.current) return;
-    const pulse = scrollLive ? Math.sin(clock.elapsedTime * 1.1) * 0.35 : 0;
+    const pulse = scrollLive ? Math.sin(clock.elapsedTime * 0.7) * 0.18 : Math.sin(clock.elapsedTime * 0.45) * 0.08;
     const pass = scrollLive ? Math.sin(Math.min(1, journey.current.depth) * Math.PI) : 0;
-    lamp.intensity = 2.4 + motion.current.intensity * 2.2 + pulse + pass * 1.4;
+    lamp.intensity = 0.7 + motion.current.intensity * 1.55 + pulse + pass * 0.8;
     if (corridorLight.current) {
       corridorLight.current.intensity = scrollLive ? 1.2 + journey.current.tunnel * 1.6 : 0.4;
     }
@@ -129,8 +137,15 @@ function Lights({
     <>
       <ambientLight color="#17114A" intensity={0.72} />
       <hemisphereLight color="#7C3AED" groundColor="#05030A" intensity={0.45} />
-      <directionalLight color="#C4B5FD" intensity={1.15} position={[-3, 8, 6]} />
-      <pointLight ref={portalLight} color="#F02CB7" position={[-0.35, 2.15, 1.6]} distance={16} decay={2} />
+      <directionalLight color="#C4B5FD" intensity={1.05} position={[-3, 8, 6]} />
+      <directionalLight color="#40BFFF" intensity={0.28} position={[5.5, 2.2, 3.4]} />
+      <pointLight
+        ref={portalLight}
+        color="#F02CB7"
+        position={[SENTINEL_POSITION[0], SENTINEL_POSITION[1] + 0.2, SENTINEL_POSITION[2] + 1.35]}
+        distance={12}
+        decay={2}
+      />
       <pointLight ref={corridorLight} color="#A855F7" position={[0, 1.8, -16]} distance={14} decay={2} />
     </>
   );
@@ -194,6 +209,33 @@ function DriftParticles({
   );
 }
 
+function ControlledBloom() {
+  const { gl, scene, camera, size } = useThree();
+  const composer = useRef<EffectComposer | null>(null);
+
+  useLayoutEffect(() => {
+    const effect = new EffectComposer(gl);
+    effect.setPixelRatio(gl.getPixelRatio());
+    effect.setSize(size.width, size.height);
+    effect.addPass(new RenderPass(scene, camera));
+    const bloom = new UnrealBloomPass(new Vector2(size.width, size.height), 0.18, 0.32, 0.92);
+    effect.addPass(bloom);
+    effect.addPass(new OutputPass());
+    composer.current = effect;
+    return () => {
+      bloom.dispose();
+      effect.dispose();
+      composer.current = null;
+    };
+  }, [gl, scene, camera, size.width, size.height]);
+
+  useFrame(() => {
+    composer.current?.render();
+  }, 1);
+
+  return null;
+}
+
 function ReadyProbe({ onReady }: { onReady: () => void }) {
   const sent = useRef(false);
   useFrame(() => {
@@ -219,6 +261,10 @@ export default function VoxelScene({
   const quality = useMemo<SceneQuality>(() => sceneQuality(), []);
   const layout = useMemo(() => buildScene(quality), [quality]);
   const detailed = quality === "high";
+  const heroPortal = useMemo(
+    () => ({ ...layout.portal, x: 2.2, y: 2.35, z: -0.9, width: 2.2, height: 2.8 }),
+    [layout.portal],
+  );
 
   return (
     <Canvas
@@ -235,7 +281,8 @@ export default function VoxelScene({
       frameloop={active ? "always" : "never"}
       onCreated={({ gl, camera }) => {
         gl.setClearColor("#05030A", 1);
-        gl.toneMappingExposure = 1.35;
+        gl.toneMapping = ACESFilmicToneMapping;
+        gl.toneMappingExposure = detailed && !reducedMotion ? 1.12 : 1.28;
         const current = motion.current;
         if (current) {
           camera.position.set(current.x, current.y, current.z);
@@ -251,9 +298,15 @@ export default function VoxelScene({
           <circleGeometry args={[22, 48]} />
           <meshStandardMaterial color="#05030A" metalness={0.72} roughness={0.46} />
         </mesh>
-        <Portal motion={motion} spec={layout.portal} />
-        <EncryptedCore motion={motion} spec={layout.portal} reducedMotion={reducedMotion} detailed={detailed} />
-        <NetworkTopology detailed={detailed} reducedMotion={reducedMotion} />
+        <Portal motion={motion} spec={heroPortal} />
+        <SecuritySentinel
+          motion={motion}
+          journey={journey}
+          reducedMotion={reducedMotion}
+          detailed={detailed}
+        />
+        <NetworkTopology detailed={detailed} reducedMotion={reducedMotion} journey={journey} />
+        {detailed && !reducedMotion ? <ControlledBloom /> : null}
         <PacketRoutes
           routes={layout.routes}
           reducedMotion={reducedMotion}

@@ -78,6 +78,14 @@ function applyMotion(target: SceneMotion, next: SceneMotion) {
   target.action = next.action;
 }
 
+function simplifyIntro(reducedMotion: boolean) {
+  if (reducedMotion || typeof window === "undefined") return reducedMotion;
+  const narrow = window.matchMedia("(max-width: 760px)").matches;
+  const cores = navigator.hardwareConcurrency ?? 8;
+  const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 8;
+  return narrow || (cores <= 4 && memory <= 4);
+}
+
 function introAlreadySeen() {
   try {
     return sessionStorage.getItem(INTRO_STORAGE_KEY) === "1";
@@ -96,7 +104,7 @@ function rememberIntro() {
 
 export function useIntroController(reducedMotion: boolean) {
   const seen = introAlreadySeen();
-  const bypass = seen || reducedMotion;
+  const bypass = seen || simplifyIntro(reducedMotion);
   const motion = useRef<SceneMotion>(bypass ? heroMotion(reducedMotion) : distantMotion());
   const [phase, setPhase] = useState<IntroPhase>(bypass ? "done" : "void");
   const [overlay, setOverlay] = useState(!bypass);
@@ -161,61 +169,61 @@ export function useIntroController(reducedMotion: boolean) {
     timelineRef.current = timeline;
     timeline.to(
       motion.current,
-      { intensity: 0.34, particles: 0.46, z: 11.05, y: 2.28, lookY: 2.52, duration: 0.7, ease: "power1.out" },
+      { intensity: 0.28, particles: 0.28, z: 10.4, y: 2.18, lookY: 2.5, duration: 0.45, ease: "power1.out" },
       0,
     );
-    mark("portal", 0.7);
+    mark("portal", 0.4);
     timeline.to(
       motion.current,
       {
-        intensity: 0.74,
-        particles: 0.82,
-        z: 8.85,
-        y: 2.08,
-        lookY: 2.48,
-        duration: 0.75,
+        intensity: 0.62,
+        particles: 0.58,
+        z: 8.9,
+        y: 2.04,
+        lookY: 2.47,
+        duration: 0.6,
         ease: "power2.inOut",
       },
-      0.7,
+      0.4,
     );
-    mark("action", 1.45);
+    mark("action", 1);
     timeline.to(
       motion.current,
       {
-        intensity: 1,
-        particles: 1,
+        intensity: 0.9,
+        particles: 0.92,
         action: 1,
-        z: 8.15,
-        y: 1.98,
+        z: 8.05,
+        y: 1.96,
         lookY: 2.46,
-        duration: 0.9,
+        duration: 0.55,
         ease: "power2.inOut",
       },
-      1.45,
+      1,
     );
-    mark("title", 2.35);
+    mark("title", 1.55);
     timeline.to(
       motion.current,
-      { z: 7.7, y: 1.92, lookY: 2.45, duration: 0.85, ease: "power1.inOut" },
-      2.35,
+      { z: 7.75, y: 1.9, lookY: 2.45, duration: 0.45, ease: "power1.inOut" },
+      1.55,
     );
-    mark("details", 3.2);
-    timeline.to(motion.current, { z: 7.55, y: 1.88, duration: 0.85, ease: "power1.inOut" }, 3.2);
-    mark("register", 4.05);
+    mark("details", 2.05);
+    timeline.to(motion.current, { z: 7.58, y: 1.88, duration: 0.4, ease: "power1.inOut" }, 2.05);
+    mark("register", 2.5);
     timeline.to(
       motion.current,
-      { z: 7.45, y: 1.86, lookY: 2.45, intensity: 1, particles: 1, action: 1, duration: 0.7, ease: "power2.inOut" },
-      4.05,
+      { z: 7.45, y: 1.86, lookY: 2.45, intensity: 1, particles: 1, action: 1, duration: 0.5, ease: "power2.inOut" },
+      2.5,
     );
     timeline.call(
       () => {
         motion.current.drift = reducedRef.current ? 0 : 1;
       },
       [],
-      4.7,
+      3.05,
     );
-    timeline.to({}, { duration: 0.45 }, 4.75);
-    safetyRef.current = window.setTimeout(() => finish(), 7000);
+    timeline.to({}, { duration: 0.25 }, 3.1);
+    safetyRef.current = window.setTimeout(() => finish(), 5200);
 
     return () => {
       timeline.kill();

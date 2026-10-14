@@ -41,7 +41,7 @@ const fragmentShader = /* glsl */ `
     vec3 color = mix(deep, mid, gate);
     color = mix(color, hot, stream * 0.85 + ring * 0.55);
     color = mix(color, flash, rune * 0.7);
-    float alpha = gate * (0.55 + 0.45 * clamp(uIntensity, 0.0, 1.0));
+    float alpha = gate * (0.16 + 0.22 * clamp(uIntensity, 0.0, 1.0));
     gl_FragColor = vec4(color, alpha);
   }
 `;
