@@ -1,6 +1,6 @@
 import { useFrame } from "@react-three/fiber";
 import { useLayoutEffect, useRef } from "react";
-import { Group, Mesh, MeshBasicMaterial, PlaneGeometry, ShaderMaterial } from "three";
+import { CircleGeometry, Group, Mesh, ShaderMaterial } from "three";
 import type { MotionRef } from "../hooks/useIntroController.ts";
 import type { PortalSpec } from "../lib/sceneLayout.ts";
 
@@ -34,10 +34,10 @@ const fragmentShader = /* glsl */ `
     float stream = smoothstep(0.07, 0.0, abs(fract(warped.y * 4.0 - uTime * 0.22) - 0.5));
     float ring = smoothstep(0.03, 0.0, abs(radius - 0.55 - sin(uTime * 0.6) * 0.03));
     float rune = step(0.86, hash(floor(warped * vec2(18.0, 32.0) + uTime * 0.15))) * gate;
-    vec3 deep = vec3(0.0, 0.08, 0.04);
-    vec3 mid = vec3(0.0, 0.72, 0.36);
-    vec3 hot = vec3(0.0, 0.94, 0.48);
-    vec3 flash = vec3(0.32, 1.0, 0.6);
+    vec3 deep = vec3(0.043, 0.071, 0.251);
+    vec3 mid = vec3(0.486, 0.227, 0.929);
+    vec3 hot = vec3(0.941, 0.173, 0.718);
+    vec3 flash = vec3(0.659, 0.333, 0.969);
     vec3 color = mix(deep, mid, gate);
     color = mix(color, hot, stream * 0.85 + ring * 0.55);
     color = mix(color, flash, rune * 0.7);
@@ -70,19 +70,10 @@ export function Portal({ motion, spec }: PortalProps) {
       depthWrite: false,
       toneMapped: false,
     });
-    const recess = new Mesh(
-      new PlaneGeometry(spec.width + 0.16, spec.height + 0.16),
-      new MeshBasicMaterial({ color: "#010604" }),
-    );
-    recess.position.set(0, spec.y, -0.16);
-    const gate = new Mesh(new PlaneGeometry(spec.width, spec.height), material);
-    gate.position.set(0, spec.y, -0.02);
-    const shaft = new Mesh(
-      new PlaneGeometry(spec.width * 0.38, spec.height * 1.8),
-      new MeshBasicMaterial({ color: "#00F07A", transparent: true, opacity: 0.12, depthWrite: false, toneMapped: false }),
-    );
-    shaft.position.set(0, spec.y + 0.4, -0.08);
-    group.add(recess, gate, shaft);
+    const radius = Math.min(spec.width, spec.height) * 0.34;
+    const gate = new Mesh(new CircleGeometry(radius, 64), material);
+    gate.position.set(0, spec.y, 0);
+    group.add(gate);
     materialRef.current = material;
 
     return () => {

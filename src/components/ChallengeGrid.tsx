@@ -4,17 +4,10 @@ import { GhostWord } from "./GhostWord.tsx";
 
 const STEP = 360 / challenges.length;
 
-function PixelIcon({ rows }: { rows: readonly string[] }) {
+function DisciplineMark() {
   return (
-    <span className="pixel-mark grid grid-cols-5 gap-0.5" aria-hidden="true">
-      {rows.flatMap((row, rowIndex) =>
-        row.split("").map((cell, columnIndex) => (
-          <span
-            key={`${rowIndex}-${columnIndex}`}
-            className={`h-1.5 w-1.5 ${cell === "1" ? "bg-neon" : "bg-obsidian"}`}
-          />
-        )),
-      )}
+    <span className="discipline-mark" aria-hidden="true">
+      <span />
     </span>
   );
 }
@@ -106,7 +99,7 @@ export function ChallengeGrid() {
                     >
                       <span className="type-meta text-cyan">{challenge.id}</span>
                       <span className="type-card">{challenge.name}</span>
-                      <PixelIcon rows={challenge.pixels} />
+                      <DisciplineMark />
                     </button>
                     {open ? <p className="nexus-fallback-copy type-small">{challenge.summary}</p> : null}
                   </div>
@@ -160,7 +153,7 @@ export function ChallengeGrid() {
               <article className="nexus-focus" aria-live="polite">
                 <div className="nexus-focus-mark">
                   <span className="type-meta text-cyan">{selected.id}</span>
-                  <PixelIcon rows={selected.pixels} />
+                  <DisciplineMark />
                 </div>
                 <div>
                   <h3 className="type-card">{selected.name}</h3>

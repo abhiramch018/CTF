@@ -67,17 +67,17 @@ export function Atmosphere({ reducedMotion }: AtmosphereProps) {
       context.clearRect(0, 0, width, height);
 
       const fog = context.createLinearGradient(0, height * 0.3, 0, height);
-      fog.addColorStop(0, `rgba(1, 6, 4, ${0.02 + presence * 0.04})`);
-      fog.addColorStop(1, `rgba(5, 61, 36, ${0.06 + life * 0.1})`);
+      fog.addColorStop(0, `rgba(5, 3, 10, ${0.02 + presence * 0.04})`);
+      fog.addColorStop(1, `rgba(23, 17, 74, ${0.06 + life * 0.1})`);
       context.fillStyle = fog;
       context.fillRect(0, 0, width, height);
 
       const drift = calm ? 0 : time * 0.00003 + window.scrollY * 0.00012;
       context.save();
       const ray = context.createLinearGradient(width * 0.5, height * 0.12, width * 0.5, height * 0.7);
-      ray.addColorStop(0, "rgba(82, 255, 154, 0)");
-      ray.addColorStop(0.4, `rgba(0, 240, 122, ${0.08 + presence * 0.08})`);
-      ray.addColorStop(1, "rgba(1, 6, 4, 0)");
+      ray.addColorStop(0, "rgba(168, 85, 247, 0)");
+      ray.addColorStop(0.4, `rgba(240, 44, 183, ${0.08 + presence * 0.08})`);
+      ray.addColorStop(1, "rgba(5, 3, 10, 0)");
       context.fillStyle = ray;
       context.beginPath();
       context.moveTo(width * (0.44 + drift), height * 0.16);
@@ -90,7 +90,7 @@ export function Atmosphere({ reducedMotion }: AtmosphereProps) {
 
       context.save();
       context.globalAlpha = 0.045 + presence * 0.03;
-      context.strokeStyle = "rgba(181, 255, 224, 0.8)";
+      context.strokeStyle = "rgba(196, 181, 253, 0.8)";
       context.lineWidth = 1;
       const scan = calm ? 36 : (time * 0.018 + window.scrollY * 0.04) % 56;
       for (let row = 0; row < 4; row += 1) {
@@ -104,7 +104,7 @@ export function Atmosphere({ reducedMotion }: AtmosphereProps) {
 
       if (!calm && !lite) {
         context.save();
-        context.strokeStyle = "rgba(181, 255, 224, 0.45)";
+        context.strokeStyle = "rgba(196, 181, 253, 0.45)";
         context.globalAlpha = 0.16 + life * 0.12;
         context.lineWidth = 1;
         for (let mark = 0; mark < 4; mark += 1) {
@@ -131,7 +131,7 @@ export function Atmosphere({ reducedMotion }: AtmosphereProps) {
         const x = speck.x * width + (pointer.x - 0.5) * 12 * speck.depth;
         const y = (speck.y * height + parallax) % height;
         const alpha = (0.18 + speck.depth * 0.35) * (0.3 + presence * 0.7);
-        context.fillStyle = speck.tone > 0.8 ? `rgba(181, 255, 224, ${alpha})` : `rgba(0, 240, 122, ${alpha * 0.8})`;
+        context.fillStyle = speck.tone > 0.8 ? `rgba(196, 181, 253, ${alpha})` : `rgba(64, 191, 255, ${alpha * 0.8})`;
         context.beginPath();
         context.arc(x, y, speck.size * 0.65, 0, Math.PI * 2);
         context.fill();
@@ -140,7 +140,7 @@ export function Atmosphere({ reducedMotion }: AtmosphereProps) {
       if (!calm && !lite && Math.floor(time / 8000) % 2 === 0) {
         const pulse = (time % 8000) / 8000;
         context.beginPath();
-        context.strokeStyle = `rgba(82, 255, 154, ${(0.1 + life * 0.1) * (1 - pulse)})`;
+        context.strokeStyle = `rgba(168, 85, 247, ${(0.1 + life * 0.1) * (1 - pulse)})`;
         context.lineWidth = 1;
         context.arc(width * 0.5, height * 0.42, 28 + pulse * 110, 0, Math.PI * 2);
         context.stroke();

@@ -1,12 +1,12 @@
 import { Canvas, useFrame } from "@react-three/fiber";
-import { useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { BufferAttribute, Color, Group, InstancedMesh, Matrix4, MeshStandardMaterial, Points } from "three";
+import { useMemo, useRef, useState, type ReactNode } from "react";
+import { BufferAttribute, Group, Points } from "three";
 import type { MotionRef } from "../hooks/useIntroController.ts";
 import type { SceneJourney } from "../hooks/useScrollJourney.ts";
 import { buildScene, sceneQuality, type SceneQuality } from "../lib/sceneLayout.ts";
-import { Operative } from "./Operative.tsx";
+import { PacketRoutes } from "./WorldLife.tsx";
 import { Portal } from "./Portal.tsx";
-import { FirewallGate, PacketRoutes, SignalLife, VoxelFragments } from "./WorldLife.tsx";
+import { EncryptedCore, NetworkTopology } from "./SecurityField.tsx";
 
 type JourneyRef = { current: SceneJourney };
 
@@ -127,71 +127,12 @@ function Lights({
   });
   return (
     <>
-      <ambientLight color="#053D24" intensity={0.72} />
-      <hemisphereLight color="#00B85C" groundColor="#010604" intensity={0.45} />
-      <directionalLight color="#B5FFE0" intensity={1.15} position={[-3, 8, 6]} />
-      <pointLight ref={portalLight} color="#00F07A" position={[-0.35, 2.15, 1.6]} distance={16} decay={2} />
-      <pointLight ref={corridorLight} color="#52FF9A" position={[0, 1.8, -16]} distance={14} decay={2} />
+      <ambientLight color="#17114A" intensity={0.72} />
+      <hemisphereLight color="#7C3AED" groundColor="#05030A" intensity={0.45} />
+      <directionalLight color="#C4B5FD" intensity={1.15} position={[-3, 8, 6]} />
+      <pointLight ref={portalLight} color="#F02CB7" position={[-0.35, 2.15, 1.6]} distance={16} decay={2} />
+      <pointLight ref={corridorLight} color="#A855F7" position={[0, 1.8, -16]} distance={14} decay={2} />
     </>
-  );
-}
-
-function VoxelField({
-  matrices,
-  tone,
-  scrollLive = false,
-}: {
-  matrices: Matrix4[];
-  tone: "stone" | "ground" | "accent";
-  scrollLive?: boolean;
-}) {
-  const ref = useRef<InstancedMesh>(null);
-  const materialRef = useRef<MeshStandardMaterial>(null);
-
-  useLayoutEffect(() => {
-    const mesh = ref.current;
-    if (!mesh) return;
-    matrices.forEach((matrix, index) => mesh.setMatrixAt(index, matrix));
-    mesh.instanceMatrix.needsUpdate = true;
-    if (tone !== "accent") {
-      const color = new Color();
-      matrices.forEach((_, index) => {
-        const band = index % 7;
-        const lift = band * 0.018;
-        const green = tone === "ground" ? 0.1 + lift : band === 0 ? 0.22 : 0.12 + lift;
-        color.setRGB(0.015 + lift * 0.2, green, 0.045 + lift);
-        mesh.setColorAt(index, color);
-      });
-      if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-    }
-    mesh.computeBoundingSphere();
-  }, [matrices, tone]);
-
-  useFrame(({ clock }) => {
-    const material = materialRef.current;
-    if (!material || tone !== "accent") return;
-    material.emissiveIntensity = scrollLive ? 0.85 + Math.sin(clock.elapsedTime * 1.3) * 0.2 : 0.9;
-  });
-
-  if (matrices.length === 0) return null;
-
-  return (
-    <instancedMesh ref={ref} args={[undefined, undefined, matrices.length]}>
-      <boxGeometry args={[1, 1, 1]} />
-      {tone === "accent" ? (
-        <meshStandardMaterial
-          ref={materialRef}
-          color="#053D24"
-          emissive="#00F07A"
-          emissiveIntensity={0.9}
-          roughness={0.42}
-          metalness={0.2}
-          toneMapped={false}
-        />
-      ) : (
-        <meshStandardMaterial roughness={0.62} metalness={0.28} />
-      )}
-    </instancedMesh>
   );
 }
 
@@ -247,7 +188,7 @@ function DriftParticles({
         <bufferGeometry>
           <bufferAttribute attach="attributes-position" args={[positions, 3]} />
         </bufferGeometry>
-        <pointsMaterial color="#52FF9A" size={0.035} sizeAttenuation transparent opacity={0.7} depthWrite={false} toneMapped={false} />
+        <pointsMaterial color="#40BFFF" size={0.035} sizeAttenuation transparent opacity={0.7} depthWrite={false} toneMapped={false} />
       </points>
     </group>
   );
@@ -293,7 +234,7 @@ export default function VoxelScene({
       }}
       frameloop={active ? "always" : "never"}
       onCreated={({ gl, camera }) => {
-        gl.setClearColor("#010604", 1);
+        gl.setClearColor("#05030A", 1);
         gl.toneMappingExposure = 1.35;
         const current = motion.current;
         if (current) {
@@ -302,30 +243,17 @@ export default function VoxelScene({
         }
       }}
     >
-      <fog attach="fog" args={["#010604", 7, 28]} />
+      <fog attach="fog" args={["#05030A", 7, 28]} />
       <CameraRig motion={motion} journey={journey} reducedMotion={reducedMotion} scrollLive={scrollLive} />
       <Lights motion={motion} journey={journey} scrollLive={scrollLive} />
       <FarMist>
-        <VoxelField matrices={layout.ground} tone="ground" />
-        <VoxelField matrices={layout.stone} tone="stone" />
-        <VoxelField matrices={layout.accent} tone="accent" scrollLive={scrollLive} />
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.2, -10]}>
+          <circleGeometry args={[22, 48]} />
+          <meshStandardMaterial color="#05030A" metalness={0.72} roughness={0.46} />
+        </mesh>
         <Portal motion={motion} spec={layout.portal} />
-        <FirewallGate z={layout.gateZ} journey={journey} scrollLive={scrollLive} />
-        <Operative
-          reducedMotion={reducedMotion}
-          detailed={detailed}
-          position={[layout.operative.x, layout.operative.y, layout.operative.z]}
-          rotationY={layout.operative.rotY}
-          motion={motion}
-        />
-        <VoxelFragments
-          portal={layout.portal}
-          journey={journey}
-          scrollLive={scrollLive}
-          count={detailed ? 28 : 12}
-          motion={motion}
-          reducedMotion={reducedMotion}
-        />
+        <EncryptedCore motion={motion} spec={layout.portal} reducedMotion={reducedMotion} detailed={detailed} />
+        <NetworkTopology detailed={detailed} reducedMotion={reducedMotion} />
         <PacketRoutes
           routes={layout.routes}
           reducedMotion={reducedMotion}
@@ -333,7 +261,6 @@ export default function VoxelScene({
           journey={journey}
           motion={motion}
         />
-        <SignalLife reducedMotion={reducedMotion} detailed={detailed} motion={motion} />
         <DriftParticles
           count={detailed ? 80 : 28}
           motion={motion}

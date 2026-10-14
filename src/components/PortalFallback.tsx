@@ -10,12 +10,7 @@ export function PortalFallback({ animate = false, compact = false }: PortalFallb
       aria-hidden="true"
     >
       <div className="css-portal__stage">
-        <div className="css-portal__rubble css-portal__rubble-left" />
-        <div className="css-portal__frame">
-          <div className="css-portal__gate" />
-        </div>
-        <div className="css-portal__rubble css-portal__rubble-right" />
-        <div className="css-portal__operative" />
+        <div className="css-portal__core" />
       </div>
     </div>
   );
