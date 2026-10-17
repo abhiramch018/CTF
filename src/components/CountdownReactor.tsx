@@ -32,22 +32,61 @@ export function CountdownReactor() {
   }, []);
 
   return (
-    <div className="reactor mt-8 border border-obsidian p-4">
-      <div className="flex items-center justify-between gap-4">
-        <p className="type-meta text-cyan">COUNTDOWN REACTOR</p>
-        <p className="type-meta text-muted">ONLINE QUALIFIER · 6 DEC 2026 · 9:00 AM IST</p>
+    <div className="command-zone">
+      <div className="command-zone-head">
+        <p className="type-meta text-cyan">ENCRYPTED CLOCK</p>
+        <p className="type-meta text-muted">ONLINE QUALIFIER · 6 DEC 2026 · 09:00 IST</p>
       </div>
       {clock ? (
-        <p className="type-stat mt-4 text-ink" aria-live="polite">
-          {clock.days}d {String(clock.hours).padStart(2, "0")}h {String(clock.minutes).padStart(2, "0")}m{" "}
-          {String(clock.seconds).padStart(2, "0")}s
-        </p>
+        <div className="clock-row" aria-live="polite">
+          <ClockCell value={String(clock.days)} label="Days" />
+          <ClockCell value={String(clock.hours).padStart(2, "0")} label="Hours" />
+          <ClockCell value={String(clock.minutes).padStart(2, "0")} label="Minutes" />
+          <ClockCell value={String(clock.seconds).padStart(2, "0")} label="Seconds" />
+        </div>
       ) : (
-        <p className="type-card mt-4 text-neon">The online qualifier start time has passed.</p>
+        <p className="type-card clock-passed">The online qualifier start time has passed.</p>
       )}
-      <div className="reactor-track mt-4" aria-hidden="true">
+      <div className="reactor-track" aria-hidden="true">
         <span style={{ width: `${charge}%` }} />
       </div>
+      <dl className="command-dates">
+        <div>
+          <dt>Qualifier</dt>
+          <dd>6 December 2026 · 09:00–21:00 IST · remote</dd>
+        </div>
+        <div>
+          <dt>Finalists</dt>
+          <dd>8 December 2026</dd>
+        </div>
+        <div>
+          <dt>Finals</dt>
+          <dd>26–27 December 2026 · KLEF, Vaddeswaram</dd>
+        </div>
+      </dl>
     </div>
+  );
+}
+
+function ClockCell({ value, label }: { value: string; label: string }) {
+  return (
+    <div className="clock-cell">
+      <span className="clock-value">{value}</span>
+      <span className="type-meta">{label}</span>
+    </div>
+  );
+}
+
+export function CountdownSection() {
+  return (
+    <section id="countdown" className="band scroll-mt-8" aria-labelledby="countdown-title">
+      <div className="band-copy">
+        <p className="type-meta text-cyan">COUNTDOWN</p>
+        <h2 id="countdown-title" className="type-section mt-3 max-w-3xl">
+          TIME UNTIL THE QUALIFIER
+        </h2>
+        <CountdownReactor />
+      </div>
+    </section>
   );
 }

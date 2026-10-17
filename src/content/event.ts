@@ -62,10 +62,11 @@ export const challenges = [
 ] as const;
 
 export const navLinks = [
-  { href: "#overview", label: "Overview" },
-  { href: "#challenges", label: "Challenge Grid" },
-  { href: "#competition", label: "Competition" },
-  { href: "#rewards", label: "Rewards" },
+  { href: "#countdown", label: "Countdown" },
+  { href: "#overview", label: "Mission" },
+  { href: "#challenges", label: "Sectors" },
+  { href: "#competition", label: "Protocol" },
+  { href: "#register", label: "Arena" },
 ] as const;
 
 export const inr = {

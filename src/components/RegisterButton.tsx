@@ -45,7 +45,7 @@ export function RegisterButton({ children, variant = "primary", className = "" }
       {variant === "nav" ? (
         <span className="sr-only">Registration link has not been published yet.</span>
       ) : (
-        <span className="register-status">Registration opens soon</span>
+        <span className="register-status">REGISTRATION OPENS SOON</span>
       )}
     </button>
   );

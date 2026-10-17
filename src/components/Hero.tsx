@@ -3,7 +3,7 @@ import { phaseAtLeast, type IntroPhase, type MotionRef } from "../hooks/useIntro
 import type { SceneJourney } from "../hooks/useScrollJourney.ts";
 import { supportsWebGL } from "../lib/webgl.ts";
 import { PortalFallback } from "./PortalFallback.tsx";
-import { QuietControls } from "./QuietControls.tsx";
+import { Navbar } from "./Navbar.tsx";
 import { RegisterButton } from "./RegisterButton.tsx";
 import { SceneErrorBoundary } from "./SceneErrorBoundary.tsx";
 
@@ -15,6 +15,7 @@ type HeroProps = {
   phase: IntroPhase;
   instant: boolean;
   reducedMotion: boolean;
+  onSkip: () => void;
 };
 
 const CIPHER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -68,8 +69,18 @@ export function WorldStage({ motion, journey, active, reducedMotion, scrollLive 
 
   useEffect(() => {
     if (mode !== "pending") return;
-    const timer = window.setTimeout(() => setMode((current) => (current === "pending" ? "css" : current)), 4500);
-    return () => window.clearTimeout(timer);
+    let timer = 0;
+    const arm = () => {
+      window.clearTimeout(timer);
+      if (document.hidden) return;
+      timer = window.setTimeout(() => setMode((current) => (current === "pending" ? "css" : current)), 4500);
+    };
+    arm();
+    document.addEventListener("visibilitychange", arm);
+    return () => {
+      window.clearTimeout(timer);
+      document.removeEventListener("visibilitychange", arm);
+    };
   }, [mode]);
 
   useEffect(() => {
@@ -100,7 +111,7 @@ export function WorldStage({ motion, journey, active, reducedMotion, scrollLive 
   );
 }
 
-export function Hero({ phase, instant, reducedMotion }: HeroProps) {
+export function Hero({ phase, instant, reducedMotion, onSkip }: HeroProps) {
   const showTitle = instant || phaseAtLeast(phase, "title");
   const showDetails = instant || phaseAtLeast(phase, "details");
   const showCta = instant || phaseAtLeast(phase, "register");
@@ -121,73 +132,71 @@ export function Hero({ phase, instant, reducedMotion }: HeroProps) {
   return (
     <section id="top" className="chapter hero-sheet relative min-h-[100svh]">
       <div className="chapter-stage">
-      <div className="hero-scrim" aria-hidden="true" />
-      <div className={copyClass}>
-        <p className="ghost-word ghost-word-hero" aria-hidden="true">
-          NOCTIS
-        </p>
-        <div className="hero-stage">
-          <div className="hero-zone hero-zone-center">
-            <h1 id="hero-title" tabIndex={-1} className="hero-mark">
-              <span className="portal-cast" aria-hidden="true" />
-              <span className="sr-only">DEAD NOCTIS</span>
-              <GlyphLine text={dead} delay="0s" />
-              <GlyphLine text={noctis} delay="0.16s" />
-            </h1>
-            <p className="type-meta mt-5 text-cyan hero-detail delay-1">SEASON 01</p>
-            <p className="type-kicker mt-4 max-w-xl hero-detail delay-2">
-              NATIONAL-LEVEL CYBERSECURITY CAPTURE THE FLAG
-            </p>
-            <ol className="mission-coords hero-detail delay-3">
-              <li>
-                <span>06 DEC 2026</span>
-                <strong>QUALIFIER</strong>
-                <em>09:00–21:00 · 12H · REMOTE</em>
-              </li>
-              <li>
-                <span>26–27 DEC 2026</span>
-                <strong>FINALS</strong>
-                <em>10:00 26 DEC – 16:00 27 DEC · KLEF</em>
-              </li>
-            </ol>
-            <div className="hero-actions">
-              <div
-                className={`register-gate${showCta ? " is-live" : ""}${instant ? " is-instant" : ""}`}
-                inert={showCta ? undefined : true}
-                aria-hidden={showCta ? undefined : true}
-                data-cta={showCta ? "live" : "waiting"}
-              >
-                <RegisterButton>ENTER THE ARENA</RegisterButton>
+        <div className={copyClass}>
+          <Navbar settled reducedMotion={reducedMotion} />
+          <div className="hero-body">
+            <header className="poster-head">
+              <p className="type-meta text-cyan">SEASON 01</p>
+              <h1 id="hero-title" tabIndex={-1} className="hero-mark">
+                <span className="sr-only">DEAD NOCTIS</span>
+                <GlyphLine text={dead} delay="0s" />
+                <GlyphLine text={noctis} delay="0.12s" />
+              </h1>
+              <p className="poster-rule hero-detail delay-1">
+                <span aria-hidden="true" />
+                NATIONAL LEVEL CTF CHALLENGE
+                <span aria-hidden="true" />
+              </p>
+            </header>
+            <div className="poster-foot">
+              <p className="type-body hero-lead hero-detail delay-1">
+                A national-level cybersecurity Capture the Flag. Ten disciplines, a remote qualifier, and offline finals at KLEF.
+              </p>
+              <ol className="mission-coords hero-detail delay-2">
+                <li>
+                  <span>06 DEC 2026</span>
+                  <strong>QUALIFIER</strong>
+                  <em>09:00–21:00 IST · 12H · REMOTE</em>
+                </li>
+                <li>
+                  <span>26–27 DEC 2026</span>
+                  <strong>FINALS</strong>
+                  <em>10:00 26 DEC – 16:00 27 DEC · KLEF</em>
+                </li>
+              </ol>
+              <div className="hero-actions">
+                <div
+                  className={`register-gate${showCta ? " is-live" : ""}${instant ? " is-instant" : ""}`}
+                  inert={showCta ? undefined : true}
+                  aria-hidden={showCta ? undefined : true}
+                  data-cta={showCta ? "live" : "waiting"}
+                >
+                  <RegisterButton>ENTER THE ARENA</RegisterButton>
+                </div>
+                <button
+                  type="button"
+                  className="btn-ghost hero-detail delay-3"
+                  data-cursor="open"
+                  onClick={() =>
+                    document.getElementById("challenges")?.scrollIntoView({
+                      behavior: reducedMotion ? "auto" : "smooth",
+                    })
+                  }
+                >
+                  OPEN THE SECTORS
+                </button>
               </div>
-              <button
-                type="button"
-                className="btn-ghost hero-detail delay-4"
-                data-cursor="open"
-                onClick={() =>
-                  document.getElementById("challenges")?.scrollIntoView({
-                    behavior: reducedMotion ? "auto" : "smooth",
-                  })
-                }
-              >
-                OPEN THE SECTORS
-              </button>
+              <p className="type-small poster-note hero-detail delay-4">
+                KL University × Google Developer Groups × White Hat Hackers · Finals at KLEF, Vaddeswaram
+              </p>
             </div>
           </div>
-          <div className="hero-zone hero-side">
-            <p className="type-meta text-cyan">00 / ACCESS GATE</p>
-            <p className="type-meta mt-8 text-muted">CTF · S01</p>
-            <p className="type-small mt-3 max-w-[14rem] text-ink">
-              KL University × Google Developer Groups × White Hat Hackers
-            </p>
-            <p className="terminal-line type-meta mt-8 text-neon">
-              <span>CHANNEL OPEN</span>
-              <span className="terminal-caret" aria-hidden="true" />
-            </p>
-            <p className="type-small mt-3 max-w-[14rem]">Remote qualifier. Finals at KLEF, Vaddeswaram.</p>
-            <QuietControls />
-          </div>
+          {!instant && phase !== "done" ? (
+            <button type="button" className="skip-opening" onClick={onSkip}>
+              Skip opening
+            </button>
+          ) : null}
         </div>
-      </div>
       </div>
     </section>
   );

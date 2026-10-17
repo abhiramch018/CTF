@@ -1,8 +1,11 @@
 import { useFrame } from "@react-three/fiber";
-import { useLayoutEffect, useRef } from "react";
-import { Group, Mesh, MeshBasicMaterial, PlaneGeometry, ShaderMaterial } from "three";
+import { useMemo, useRef } from "react";
+import { Group, Mesh, ShaderMaterial } from "three";
 import type { MotionRef } from "../hooks/useIntroController.ts";
+import type { SceneJourney } from "../hooks/useScrollJourney.ts";
 import type { PortalSpec } from "../lib/sceneLayout.ts";
+
+type JourneyRef = { current: SceneJourney };
 
 const vertexShader = /* glsl */ `
   varying vec2 vUv;
@@ -17,31 +20,13 @@ const fragmentShader = /* glsl */ `
   uniform float uTime;
   uniform float uIntensity;
   varying vec2 vUv;
-
-  float hash(vec2 p) {
-    return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
-  }
-
   void main() {
-    vec2 centered = vUv * 2.0 - 1.0;
-    float radius = length(centered * vec2(0.72, 1.0));
-    float pull = smoothstep(1.05, 0.15, radius);
-    vec2 warped = vUv + centered * pull * (0.035 + 0.02 * sin(uTime * 0.8));
-    warped.x += sin(warped.y * 18.0 + uTime * 0.85) * 0.018 * pull;
-    warped.y += sin(warped.x * 14.0 - uTime * 0.55) * 0.012 * pull;
-
-    float gate = smoothstep(1.02, 0.08, length((warped * 2.0 - 1.0) * vec2(0.7, 1.0)));
-    float stream = smoothstep(0.07, 0.0, abs(fract(warped.y * 4.0 - uTime * 0.22) - 0.5));
-    float ring = smoothstep(0.03, 0.0, abs(radius - 0.55 - sin(uTime * 0.6) * 0.03));
-    float rune = step(0.86, hash(floor(warped * vec2(18.0, 32.0) + uTime * 0.15))) * gate;
-    vec3 deep = vec3(0.0, 0.08, 0.04);
-    vec3 mid = vec3(0.0, 0.72, 0.36);
-    vec3 hot = vec3(0.0, 0.94, 0.48);
-    vec3 flash = vec3(0.32, 1.0, 0.6);
-    vec3 color = mix(deep, mid, gate);
-    color = mix(color, hot, stream * 0.85 + ring * 0.55);
-    color = mix(color, flash, rune * 0.7);
-    float alpha = gate * (0.55 + 0.45 * clamp(uIntensity, 0.0, 1.0));
+    float core = smoothstep(0.5, 0.0, abs(vUv.x - 0.5));
+    float rise = smoothstep(0.18, 0.0, abs(fract(vUv.y * 6.0 - uTime * 0.1) - 0.5));
+    vec3 emerald = vec3(0.0, 0.722, 0.361);
+    vec3 hot = vec3(0.65, 1.0, 0.82);
+    vec3 color = mix(emerald, hot, core * 0.8 + rise * 0.28);
+    float alpha = core * (0.16 + 0.62 * clamp(uIntensity, 0.0, 1.4));
     gl_FragColor = vec4(color, alpha);
   }
 `;
@@ -49,61 +34,100 @@ const fragmentShader = /* glsl */ `
 type PortalProps = {
   motion: MotionRef;
   spec: PortalSpec;
+  journey: JourneyRef;
+  scrollLive: boolean;
 };
 
-export function Portal({ motion, spec }: PortalProps) {
-  const anchor = useRef<Group>(null);
-  const materialRef = useRef<ShaderMaterial>(null);
+export function Portal({ motion, spec, journey, scrollLive }: PortalProps) {
+  const beam = useRef<ShaderMaterial>(null);
+  const slit = useRef<Mesh>(null);
+  const cube = useRef<Group>(null);
+  const leftSeal = useRef<Mesh>(null);
+  const rightSeal = useRef<Mesh>(null);
+  const glyphs = useMemo(
+    () =>
+      [
+        [0.16, 0.14, 0.34],
+        [-0.16, 0.14, 0.34],
+        [0, -0.12, 0.34],
+        [0.28, 0, 0.04],
+        [-0.28, -0.08, -0.02],
+      ] as Array<[number, number, number]>,
+    [],
+  );
 
-  useLayoutEffect(() => {
-    const group = anchor.current;
-    if (!group) return;
-
-    const material = new ShaderMaterial({
-      uniforms: {
-        uTime: { value: 0 },
-        uIntensity: { value: 0.08 },
-      },
-      vertexShader,
-      fragmentShader,
-      transparent: true,
-      depthWrite: false,
-      toneMapped: false,
-    });
-    const recess = new Mesh(
-      new PlaneGeometry(spec.width + 0.16, spec.height + 0.16),
-      new MeshBasicMaterial({ color: "#010604" }),
-    );
-    recess.position.set(0, spec.y, -0.16);
-    const gate = new Mesh(new PlaneGeometry(spec.width, spec.height), material);
-    gate.position.set(0, spec.y, -0.02);
-    const shaft = new Mesh(
-      new PlaneGeometry(spec.width * 0.38, spec.height * 1.8),
-      new MeshBasicMaterial({ color: "#00F07A", transparent: true, opacity: 0.12, depthWrite: false, toneMapped: false }),
-    );
-    shaft.position.set(0, spec.y + 0.4, -0.08);
-    group.add(recess, gate, shaft);
-    materialRef.current = material;
-
-    return () => {
-      materialRef.current = null;
-      group.children.forEach((child) => {
-        if (!(child instanceof Mesh)) return;
-        child.geometry.dispose();
-        const surface = child.material;
-        if (Array.isArray(surface)) surface.forEach((item) => item.dispose());
-        else surface.dispose();
-      });
-      group.clear();
-    };
-  }, [spec]);
-
-  useFrame((_, delta) => {
-    const material = materialRef.current;
-    if (!material) return;
-    material.uniforms.uTime.value += delta;
-    material.uniforms.uIntensity.value = motion.current?.intensity ?? 0;
+  useFrame(({ clock }, delta) => {
+    const current = motion.current;
+    const breach = scrollLive ? journey.current.breach : 0;
+    const cubePower = current?.cube ?? 1;
+    const beamPower = current?.beam ?? 1;
+    if (beam.current) {
+      beam.current.uniforms.uTime.value += delta;
+      beam.current.uniforms.uIntensity.value = beamPower * (0.35 + breach * 0.9) + (current?.intensity ?? 0) * 0.25;
+    }
+    if (slit.current) {
+      slit.current.scale.x = 0.35 + beamPower * 0.9 + breach * 2.4;
+      slit.current.visible = beamPower > 0.04;
+    }
+    if (cube.current) {
+      const spin = clock.elapsedTime * (0.18 + breach * 0.12);
+      cube.current.rotation.y = spin;
+      cube.current.rotation.x = Math.sin(clock.elapsedTime * 0.28) * 0.06;
+      cube.current.position.y = 3.62 + Math.sin(clock.elapsedTime * 0.55) * 0.04 + breach * 0.22;
+      const scale = 0.08 + cubePower * 0.92;
+      cube.current.scale.setScalar(scale);
+      cube.current.visible = cubePower > 0.03;
+    }
+    if (leftSeal.current) leftSeal.current.position.x = -0.16 - breach * 0.28;
+    if (rightSeal.current) rightSeal.current.position.x = 0.16 + breach * 0.28;
   });
 
-  return <group ref={anchor} position={[spec.x, 0, spec.z]} />;
+  return (
+    <group position={[spec.x, 0, spec.z]}>
+      <mesh position={[-0.72, 1.55, 0]}>
+        <boxGeometry args={[0.28, 3.1, 0.28]} />
+        <meshStandardMaterial color="#07100C" roughness={0.78} />
+      </mesh>
+      <mesh position={[0.72, 1.55, 0]}>
+        <boxGeometry args={[0.28, 3.1, 0.28]} />
+        <meshStandardMaterial color="#07100C" roughness={0.78} />
+      </mesh>
+      <mesh position={[0, 3.05, 0]}>
+        <boxGeometry args={[1.72, 0.22, 0.28]} />
+        <meshStandardMaterial color="#07100C" emissive="#00B85C" emissiveIntensity={0.12} />
+      </mesh>
+      <mesh ref={slit} position={[0, 1.45, 0.02]}>
+        <planeGeometry args={[0.22, 2.55]} />
+        <shaderMaterial
+          ref={beam}
+          uniforms={{ uTime: { value: 0 }, uIntensity: { value: 0 } }}
+          vertexShader={vertexShader}
+          fragmentShader={fragmentShader}
+          transparent
+          depthWrite={false}
+          toneMapped={false}
+        />
+      </mesh>
+      <group ref={cube} position={[0, 3.62, 0]}>
+        <mesh>
+          <boxGeometry args={[0.78, 0.78, 0.78]} />
+          <meshStandardMaterial color="#07100C" emissive="#063A25" emissiveIntensity={0.45} roughness={0.4} metalness={0.4} />
+        </mesh>
+        <mesh ref={leftSeal} position={[-0.2, 0, 0.3]}>
+          <boxGeometry args={[0.06, 0.42, 0.04]} />
+          <meshStandardMaterial color="#063A25" emissive="#00B85C" emissiveIntensity={0.55} roughness={0.35} />
+        </mesh>
+        <mesh ref={rightSeal} position={[0.2, 0, 0.3]}>
+          <boxGeometry args={[0.06, 0.42, 0.04]} />
+          <meshStandardMaterial color="#063A25" emissive="#00B85C" emissiveIntensity={0.55} roughness={0.35} />
+        </mesh>
+        {glyphs.map(([x, y, z]) => (
+          <mesh key={`${x}-${y}-${z}`} position={[x, y, z]}>
+            <boxGeometry args={[0.07, 0.07, 0.025]} />
+            <meshStandardMaterial color="#063A25" emissive="#00F07A" emissiveIntensity={0.7} roughness={0.3} metalness={0.1} />
+          </mesh>
+        ))}
+      </group>
+    </group>
+  );
 }

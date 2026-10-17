@@ -8,6 +8,7 @@ export type SceneJourney = {
   hero: number;
   finale: number;
   tunnel: number;
+  breach: number;
   depth: number;
   pointerX: number;
   pointerY: number;
@@ -18,6 +19,7 @@ export function useScrollJourney(enabled: boolean) {
     hero: 0,
     finale: 0,
     tunnel: 0,
+    breach: 0,
     depth: 0,
     pointerX: 0,
     pointerY: 0,
@@ -28,6 +30,7 @@ export function useScrollJourney(enabled: boolean) {
     state.hero = 0;
     state.finale = 0;
     state.tunnel = 0;
+    state.breach = 0;
     state.depth = 0;
     state.pointerX = 0;
     state.pointerY = 0;
@@ -80,6 +83,22 @@ export function useScrollJourney(enabled: boolean) {
       );
     }
 
+    const breach = document.getElementById("breach");
+    if (breach) {
+      created.push(
+        ScrollTrigger.create({
+          trigger: breach,
+          start: "top 78%",
+          end: "bottom 42%",
+          scrub: 0.7,
+          onUpdate: (self) => {
+            state.breach = self.progress;
+            document.documentElement.style.setProperty("--breach", self.progress.toFixed(3));
+          },
+        }),
+      );
+    }
+
     const tunnel = document.getElementById("challenges");
     if (tunnel) {
       created.push(
@@ -126,10 +145,12 @@ export function useScrollJourney(enabled: boolean) {
       document.documentElement.style.removeProperty("--journey-hero");
       document.documentElement.style.removeProperty("--tunnel");
       document.documentElement.style.removeProperty("--scroll-depth");
+      document.documentElement.style.removeProperty("--breach");
       created.forEach((trigger) => trigger.kill());
       state.hero = 0;
       state.finale = 0;
       state.tunnel = 0;
+      state.breach = 0;
       state.depth = 0;
       state.pointerX = 0;
       state.pointerY = 0;

@@ -1,7 +1,5 @@
 import { useEffect, useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
-import { CountdownReactor } from "./CountdownReactor.tsx";
-import { GhostWord } from "./GhostWord.tsx";
 import { inr } from "../content/event.ts";
 
 type StatProps = {
@@ -80,17 +78,15 @@ type EventOverviewProps = {
 
 export function EventOverview({ reducedMotion }: EventOverviewProps) {
   return (
-    <section id="overview" className="chapter sheet sheet-forest scroll-mt-24 border-t border-obsidian px-5 py-20 md:px-8 md:py-28">
-      <div className="chapter-stage">
-      <GhostWord>MISSION</GhostWord>
-      <div className="section-copy mx-auto max-w-6xl">
-        <p className="type-meta text-cyan">01 / THE MISSION</p>
-        <h2 className="type-section mt-3 max-w-3xl">THE GRID IS WAITING</h2>
+    <section id="overview" className="band scroll-mt-8">
+      <div className="band-copy">
+        <p className="type-meta text-cyan">THE MISSION</p>
+        <h2 className="type-section mt-3 max-w-3xl">A NATIONAL CTF, IN TWO STAGES</h2>
         <p className="type-body mt-5 max-w-2xl">
-          Investigate. Decode. Exploit. Reverse. Every flag opens another path through the dimension.
+          Investigate, decode, exploit, and reverse inside organiser-controlled environments. Every flag is scored in
+          jeopardy style. DEAD NOCTIS CTF Season 01 runs from a remote qualifier into offline finals.
         </p>
-        <CountdownReactor />
-        <div className="glass-panel mt-10">
+        <div className="glass-panel mt-8">
           <div className="flex items-center justify-between border-b border-obsidian/70 px-4 py-2 type-meta text-muted">
             <span>GRID // STATUS</span>
             <span className="text-neon">SEASON 01</span>
@@ -153,7 +149,6 @@ export function EventOverview({ reducedMotion }: EventOverviewProps) {
           and outside targets are off limits. The writeup deadline will be posted on the official channels. Fee{" "}
           <strong>{inr.fee}</strong> per player.
         </p>
-      </div>
       </div>
     </section>
   );

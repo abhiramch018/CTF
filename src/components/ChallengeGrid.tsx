@@ -120,13 +120,7 @@ export function ChallengeGrid() {
               onPointerUp={onPointerUp}
             >
               <div className="nexus-scene">
-              <div className="nexus-core" aria-hidden="true">
-                <span />
-                <span />
-                <i />
-                <i />
-                <i />
-              </div>
+              <div className="nexus-core" aria-hidden="true" />
               <div className="nexus-ring" style={{ "--spin": `${-index * STEP}deg` } as CSSProperties}>
                 {challenges.map((challenge, itemIndex) => {
                   const depth = Math.min(Math.abs(itemIndex - index), count - Math.abs(itemIndex - index));

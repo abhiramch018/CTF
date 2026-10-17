@@ -1,87 +1,72 @@
-import { contact, socialLinks } from "../config/site.ts";
-import { inr } from "../content/event.ts";
-import { GhostWord } from "./GhostWord.tsx";
-import { PortalFallback } from "./PortalFallback.tsx";
-import { RegisterButton } from "./RegisterButton.tsx";
+import { contact, logos, socialLinks } from "../config/site.ts";
+import { BrandLogo } from "./Navbar.tsx";
+import { QuietControls } from "./QuietControls.tsx";
 
-type EventFooterProps = {
-  reducedMotion: boolean;
-  ctaLive: boolean;
-  instant: boolean;
-};
+const partners = [
+  { src: logos.kl, name: "KL University" },
+  { src: logos.gdg, name: "Google Developer Groups" },
+  { src: logos.whh, name: "White Hat Hackers" },
+];
 
-export function EventFooter({ reducedMotion, ctaLive, instant }: EventFooterProps) {
+export function EventFooter() {
   return (
-    <footer id="register" className="chapter finale-sheet scroll-mt-24 border-t border-obsidian px-5 py-20 md:px-8">
-      <div className="chapter-stage">
-      <div className="finale-scrim" aria-hidden="true" />
-      <GhostWord>ENTER</GhostWord>
-      <div className="section-copy relative z-[1] mx-auto max-w-6xl">
-        <PortalFallback animate={!reducedMotion} compact />
-        <p className="type-meta mt-8 text-neon">05 / FINAL ACCESS</p>
-        <h2 className="type-finale mt-3">THE SYSTEM IS WAITING.</h2>
-        <p className="type-kicker mt-4">ARE YOU READY TO ENTER?</p>
-        <div
-          className={`register-gate mt-8${ctaLive ? " is-live" : ""}${instant ? " is-instant" : ""}`}
-          inert={ctaLive ? undefined : true}
-          aria-hidden={ctaLive ? undefined : true}
-          data-cta={ctaLive ? "live" : "waiting"}
-        >
-          <RegisterButton variant="footer">REGISTER</RegisterButton>
-        </div>
-        <dl className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="border border-obsidian bg-void/70 p-4">
-            <dt className="type-meta text-muted">QUALIFIER</dt>
-            <dd className="type-small mt-2 text-ink">6 December 2026 · online · 9 AM – 9 PM</dd>
-          </div>
-          <div className="border border-obsidian bg-void/70 p-4">
-            <dt className="type-meta text-muted">FINALS</dt>
-            <dd className="type-small mt-2 text-ink">26–27 December 2026 · KLEF, Vaddeswaram</dd>
-          </div>
-          <div className="border border-obsidian bg-void/70 p-4">
-            <dt className="type-meta text-muted">FEE</dt>
-            <dd className="type-small mt-2 text-ink">{inr.fee} per player</dd>
-          </div>
-          <div className="border border-obsidian bg-void/70 p-4">
-            <dt className="type-meta text-muted">QUESTIONS</dt>
-            <dd className="type-small mt-2 text-ink">
+    <footer id="partners" className="partners-sheet scroll-mt-8">
+      <div className="partners-copy">
+        <p className="type-meta text-cyan">PARTNERS</p>
+        <h2 className="type-section mt-3">THE ORGANISERS</h2>
+        <p className="type-body mt-4 max-w-xl">
+          DEAD NOCTIS CTF Season 01 is hosted with KL University, Google Developer Groups, and White Hat Hackers.
+        </p>
+        <ul className="partner-row">
+          {partners.map((partner) => (
+            <li key={partner.name}>
+              <BrandLogo src={partner.src} alt={partner.name} />
+              <span>{partner.name}</span>
+            </li>
+          ))}
+        </ul>
+        <div className="footer-grid">
+          <div>
+            <h3 className="type-meta text-muted">QUESTIONS</h3>
+            <p className="type-small mt-2">
               {contact.email ? (
-                <a href={`mailto:${contact.email}`} className="hover:text-neon">
-                  {contact.email}
-                </a>
+                <a href={`mailto:${contact.email}`}>{contact.email}</a>
               ) : (
-                <span>Email to be announced</span>
+                "Email to be announced"
               )}
-              <span className="mt-1 block text-muted">
-                {contact.phone ? contact.phone : "Phone to be announced"}
-              </span>
-            </dd>
+            </p>
+            <p className="type-small mt-1 text-muted">{contact.phone ?? "Phone to be announced"}</p>
           </div>
-        </dl>
-        <div className="mt-8">
-          <h3 className="type-meta text-muted">FOLLOW THE RUN</h3>
-          <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-2">
-            {socialLinks.map((link) => (
-              <li key={link.label}>
-                {link.href ? (
-                  <a href={link.href} className="type-meta text-ink hover:text-neon" rel="noopener noreferrer">
-                    {link.label}
-                  </a>
-                ) : (
-                  <span className="type-meta text-muted">
-                    {link.label}
-                    <span className="ml-2 text-amber">Link pending</span>
-                  </span>
-                )}
-              </li>
-            ))}
-          </ul>
+          <div>
+            <h3 className="type-meta text-muted">FOLLOW THE RUN</h3>
+            <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-2">
+              {socialLinks.map((link) => (
+                <li key={link.label}>
+                  {link.href ? (
+                    <a href={link.href} className="type-meta text-ink" rel="noopener noreferrer">
+                      {link.label}
+                    </a>
+                  ) : (
+                    <span className="type-meta text-muted">
+                      {link.label}
+                      <span className="ml-2">Link pending</span>
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <h3 className="type-meta text-muted">FINALS</h3>
+            <p className="type-small mt-2">26–27 December 2026</p>
+            <p className="type-small text-muted">KLEF, Vaddeswaram</p>
+          </div>
         </div>
-        <div className="type-meta mt-12 border-t border-obsidian pt-6 text-muted">
-          <p>GDG × WHITE HAT HACKERS</p>
-          <p className="mt-2">DEAD NOCTIS CTF · SEASON 01</p>
+        <QuietControls />
+        <div className="footer-identity">
+          <p>DEAD NOCTIS CTF · SEASON 01</p>
+          <p className="mt-1">KL University × Google Developer Groups × White Hat Hackers</p>
         </div>
-      </div>
       </div>
     </footer>
   );

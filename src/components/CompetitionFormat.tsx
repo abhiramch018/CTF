@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { inr } from "../content/event.ts";
-import { GhostWord } from "./GhostWord.tsx";
 
 const qualifierPoints = [
   "6 December 2026",
-  "9:00 AM – 9:00 PM",
+  "9:00 AM – 9:00 PM IST",
   "12 hours",
   "Jeopardy-style competition",
   "Participants compete remotely",
@@ -19,6 +18,25 @@ const finalsPoints = [
   "Teams of up to three members",
 ];
 
+const recognition = [
+  {
+    title: "Ranks 4–10",
+    copy: "Internship opportunities, certificates, stickers, and event ID cards.",
+  },
+  {
+    title: "Special awards",
+    copy: "Best Writeup and First Blood recognitions.",
+  },
+  {
+    title: "All offline finalists",
+    copy: "Certificates, stickers, and event ID cards.",
+  },
+  {
+    title: "Online players",
+    copy: "E-certificates for everyone who takes part.",
+  },
+];
+
 export function CompetitionFormat() {
   const [active, setActive] = useState("qualifier");
   const checkpoints = [
@@ -30,7 +48,7 @@ export function CompetitionFormat() {
     {
       id: "qualifier",
       title: "QUALIFIER",
-      detail: "6 December 2026, 9:00 AM–9:00 PM. Twelve hours, remote, jeopardy-style. Flags and a writeup are submitted so the run can be verified.",
+      detail: "6 December 2026, 9:00 AM–9:00 PM IST. Twelve hours, remote, jeopardy-style. Flags and a writeup are submitted so the run can be verified.",
     },
     {
       id: "named",
@@ -46,19 +64,19 @@ export function CompetitionFormat() {
   const selected = checkpoints.find((item) => item.id === active) ?? checkpoints[1];
 
   return (
-    <section id="competition" className="chapter sheet sheet-forest scroll-mt-24 border-t border-obsidian px-5 py-20 md:px-8 md:py-28">
-      <div className="chapter-stage">
-      <GhostWord>PROTOCOL</GhostWord>
-      <div className="section-copy mx-auto max-w-6xl">
-        <p className="type-meta text-cyan">03 / THE PROTOCOL</p>
-        <h2 className="type-section mt-3 max-w-3xl">TWO DIMENSIONS. ONE CHALLENGE.</h2>
-        <div className="mission-map mt-8" role="tablist" aria-label="Competition stages">
+    <section id="competition" className="band scroll-mt-8">
+      <div className="band-copy">
+        <p className="type-meta text-cyan">COMPETITION</p>
+        <h2 className="type-section mt-3 max-w-3xl">TWO STAGES. ONE RULEBOOK.</h2>
+        <div className="mission-map mt-8" role="tablist" aria-label="Competition timeline">
           {checkpoints.map((point) => (
             <button
               key={point.id}
               type="button"
               role="tab"
+              id={`stage-${point.id}`}
               aria-selected={active === point.id}
+              aria-controls="stage-panel"
               className={`mission-node ${active === point.id ? "is-active" : ""}`}
               onClick={() => setActive(point.id)}
             >
@@ -66,52 +84,79 @@ export function CompetitionFormat() {
             </button>
           ))}
         </div>
-        <p className="type-small mt-4 max-w-3xl text-ink" role="tabpanel">
+        <p id="stage-panel" className="type-small stage-panel" role="tabpanel" aria-labelledby={`stage-${selected.id}`}>
           {selected.detail}
         </p>
-        <div className="mt-10 flex flex-col gap-4 md:flex-row md:items-stretch">
-          <article className="terminal-panel reveal flex-1 border border-obsidian p-6" data-cursor="inspect">
-            <p className="type-meta text-muted">DIMENSION 01</p>
+        <div className="mt-8 grid gap-4 lg:grid-cols-2">
+          <article className="glass-panel reveal p-5">
+            <p className="type-meta text-muted">STAGE 01</p>
             <h3 className="type-subhead mt-2">ONLINE QUALIFIER</h3>
-            <ul className="type-small mt-5 space-y-2 text-ink">
+            <ul className="type-small mt-4 space-y-2 text-ink">
               {qualifierPoints.map((point) => (
-                <li key={point} className="flex gap-3">
-                  <span className="mt-1.5 h-2 w-2 shrink-0 bg-neon" aria-hidden="true" />
-                  <span>{point}</span>
-                </li>
+                <li key={point}>{point}</li>
               ))}
             </ul>
           </article>
-          <div className="stage-trail reveal reveal-delay-1 flex items-center justify-center gap-2 md:flex-col" aria-hidden="true">
-            {["SOLVE", "SUBMIT", "VERIFY"].map((step, index) => (
-              <span key={step} className="flex flex-col items-center gap-2">
-                <span
-                  className="trail-mark h-3 w-3 bg-neon"
-                  style={{ opacity: 0.35 + index * 0.25 }}
-                />
-                <span className="type-meta text-muted">{step}</span>
-              </span>
-            ))}
-          </div>
-          <article className="terminal-panel reveal reveal-delay-2 flex-1 border border-neon/40 p-6" data-cursor="inspect">
-            <p className="type-meta text-neon">DIMENSION 02</p>
+          <article className="glass-panel reveal p-5">
+            <p className="type-meta text-neon">STAGE 02</p>
             <h3 className="type-subhead mt-2">OFFLINE FINALS</h3>
-            <ul className="type-small mt-5 space-y-2 text-ink">
+            <ul className="type-small mt-4 space-y-2 text-ink">
               {finalsPoints.map((point) => (
-                <li key={point} className="flex gap-3">
-                  <span className="mt-1.5 h-2 w-2 shrink-0 bg-neon" aria-hidden="true" />
-                  <span>{point}</span>
-                </li>
+                <li key={point}>{point}</li>
               ))}
             </ul>
           </article>
         </div>
-        <p className="type-small mt-6 max-w-3xl">
+        <p className="type-small mt-5 max-w-3xl">
           The top 40 teams cross over: up to 35 from the leaderboard and up to 5 wildcard teams. Wildcard criteria
           are published before registration opens. Finalists are named on 8 December 2026. Scores and writeups are
           checked, and a withdrawn spot goes to the next eligible team. This page does not show a live leaderboard.
         </p>
-      </div>
+
+        <div id="rewards" className="rewards-block scroll-mt-8">
+          <p className="type-meta text-cyan">REWARDS</p>
+          <h3 className="type-subhead mt-2">BREAK THE CODE. CLAIM THE REWARD.</h3>
+          <p className="type-body mt-3">{inr.total} in cash prizes for the top three teams.</p>
+          <ol className="prize-row">
+            <li>
+              <span className="type-meta text-cyan">1ST</span>
+              <strong>{inr.first}</strong>
+              <span>Goodies, certificate, stickers, and an ID card</span>
+            </li>
+            <li>
+              <span className="type-meta text-cyan">2ND</span>
+              <strong>{inr.second}</strong>
+              <span>Goodies, certificate, stickers, and an ID card</span>
+            </li>
+            <li>
+              <span className="type-meta text-cyan">3RD</span>
+              <strong>{inr.third}</strong>
+              <span>Goodies, certificate, stickers, and an ID card</span>
+            </li>
+          </ol>
+          <dl className="recognition-list">
+            {recognition.map((item) => (
+              <div key={item.title}>
+                <dt>{item.title}</dt>
+                <dd>{item.copy}</dd>
+              </div>
+            ))}
+          </dl>
+          <p className="type-small mt-4">
+            Internships, training, and other partner-linked benefits are announced only as each partner confirms them.
+          </p>
+        </div>
+
+        <div className="rules-block">
+          <p className="type-meta text-cyan">RULES</p>
+          <ul className="type-small mt-3 space-y-2">
+            <li>Attack only the systems the organisers provide. University systems, other teams, and outside targets are off limits.</li>
+            <li>Registration is {inr.fee} per player. The public link has not been published yet.</li>
+            <li>Flag format is DNCTF{"{...}"}. Scoring is dynamic, and a challenge’s value shifts as teams solve it.</li>
+            <li>Hints may cost points. The full rulebook comes from the organisers.</li>
+            <li>The writeup deadline will be posted on the official channels.</li>
+          </ul>
+        </div>
       </div>
     </section>
   );

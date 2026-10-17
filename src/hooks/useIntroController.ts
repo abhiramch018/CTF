@@ -32,38 +32,56 @@ export type SceneMotion = {
   x: number;
   y: number;
   z: number;
+  lookX: number;
   lookY: number;
+  lookZ: number;
   intensity: number;
   particles: number;
   drift: number;
   action: number;
+  city: number;
+  cube: number;
+  beam: number;
+  figure: number;
 };
 
 export type MotionRef = RefObject<SceneMotion>;
 
 export function heroMotion(reducedMotion: boolean): SceneMotion {
   return {
-    x: 0,
-    y: 1.86,
-    z: 7.45,
-    lookY: 2.45,
+    x: -2.55,
+    y: 3.2,
+    z: 12.5,
+    lookX: 0.85,
+    lookY: 1.65,
+    lookZ: 0.2,
     intensity: 1,
     particles: reducedMotion ? 0 : 1,
     drift: reducedMotion ? 0 : 1,
     action: 1,
+    city: 1,
+    cube: 1,
+    beam: 1,
+    figure: 1,
   };
 }
 
 function distantMotion(): SceneMotion {
   return {
-    x: 0,
-    y: 2.4,
-    z: 12.5,
-    lookY: 2.55,
-    intensity: 0.06,
-    particles: 0.16,
+    x: -3.4,
+    y: 3.4,
+    z: 14.2,
+    lookX: 0.4,
+    lookY: 2.1,
+    lookZ: -5,
+    intensity: 0.08,
+    particles: 0.12,
     drift: 0,
     action: 0,
+    city: 0.04,
+    cube: 0,
+    beam: 0,
+    figure: 0,
   };
 }
 
@@ -71,11 +89,17 @@ function applyMotion(target: SceneMotion, next: SceneMotion) {
   target.x = next.x;
   target.y = next.y;
   target.z = next.z;
+  target.lookX = next.lookX;
   target.lookY = next.lookY;
+  target.lookZ = next.lookZ;
   target.intensity = next.intensity;
   target.particles = next.particles;
   target.drift = next.drift;
   target.action = next.action;
+  target.city = next.city;
+  target.cube = next.cube;
+  target.beam = next.beam;
+  target.figure = next.figure;
 }
 
 function simplifyIntro(reducedMotion: boolean) {
@@ -84,6 +108,12 @@ function simplifyIntro(reducedMotion: boolean) {
   const cores = navigator.hardwareConcurrency ?? 8;
   const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 8;
   return narrow || (cores <= 4 && memory <= 4);
+}
+
+function deepLink() {
+  if (typeof window === "undefined") return false;
+  const hash = window.location.hash;
+  return hash.length > 1 && hash !== "#top";
 }
 
 function introAlreadySeen() {
@@ -104,10 +134,9 @@ function rememberIntro() {
 
 export function useIntroController(reducedMotion: boolean) {
   const seen = introAlreadySeen();
-  const bypass = seen || simplifyIntro(reducedMotion);
+  const bypass = seen || simplifyIntro(reducedMotion) || deepLink();
   const motion = useRef<SceneMotion>(bypass ? heroMotion(reducedMotion) : distantMotion());
   const [phase, setPhase] = useState<IntroPhase>(bypass ? "done" : "void");
-  const [overlay, setOverlay] = useState(!bypass);
   const [cut, setCut] = useState(bypass);
   const finished = useRef(bypass);
   const timelineRef = useRef<gsap.core.Timeline | null>(null);
@@ -131,7 +160,6 @@ export function useIntroController(reducedMotion: boolean) {
     if (!alive.current) return;
     if (options?.cut) setCut(true);
     setPhase("done");
-    setOverlay(false);
     document.body.classList.remove("intro-lock");
   }, []);
 
@@ -151,9 +179,7 @@ export function useIntroController(reducedMotion: boolean) {
   }, [bypass]);
 
   useEffect(() => {
-    if (finished.current || introAlreadySeen()) return;
-
-    document.body.classList.add("intro-lock");
+    if (finished.current || introAlreadySeen() || deepLink()) return;
 
     const mark = (next: IntroPhase, at: number) => {
       timeline.call(
@@ -169,61 +195,61 @@ export function useIntroController(reducedMotion: boolean) {
     timelineRef.current = timeline;
     timeline.to(
       motion.current,
-      { intensity: 0.34, particles: 0.46, z: 11.05, y: 2.28, lookY: 2.52, duration: 0.7, ease: "power1.out" },
+      {
+        city: 1,
+        intensity: 0.36,
+        particles: 0.34,
+        z: 12.4,
+        y: 3.05,
+        lookZ: -0.4,
+        lookX: 0.35,
+        duration: 0.65,
+        ease: "power1.out",
+      },
       0,
     );
-    mark("portal", 0.7);
+    mark("portal", 0.65);
     timeline.to(
       motion.current,
-      {
-        intensity: 0.74,
-        particles: 0.82,
-        z: 8.85,
-        y: 2.08,
-        lookY: 2.48,
-        duration: 0.75,
-        ease: "power2.inOut",
-      },
-      0.7,
+      { cube: 1, intensity: 0.62, particles: 0.55, duration: 0.42, ease: "power2.out" },
+      0.65,
     );
-    mark("action", 1.45);
+    mark("action", 1.08);
+    timeline.to(
+      motion.current,
+      { beam: 1, action: 0.7, intensity: 0.84, duration: 0.4, ease: "power2.inOut" },
+      1.08,
+    );
     timeline.to(
       motion.current,
       {
+        figure: 1,
+        action: 1,
         intensity: 1,
         particles: 1,
-        action: 1,
-        z: 8.15,
-        y: 1.98,
-        lookY: 2.46,
-        duration: 0.9,
+        x: -2.55,
+        y: 3.2,
+        z: 12.5,
+        lookX: 0.85,
+        lookY: 1.65,
+        lookZ: 0.2,
+        duration: 0.48,
         ease: "power2.inOut",
       },
-      1.45,
+      1.48,
     );
-    mark("title", 2.35);
-    timeline.to(
-      motion.current,
-      { z: 7.7, y: 1.92, lookY: 2.45, duration: 0.85, ease: "power1.inOut" },
-      2.35,
-    );
-    mark("details", 3.2);
-    timeline.to(motion.current, { z: 7.55, y: 1.88, duration: 0.85, ease: "power1.inOut" }, 3.2);
-    mark("register", 4.05);
-    timeline.to(
-      motion.current,
-      { z: 7.45, y: 1.86, lookY: 2.45, intensity: 1, particles: 1, action: 1, duration: 0.7, ease: "power2.inOut" },
-      4.05,
-    );
+    mark("title", 1.95);
+    mark("details", 2.4);
+    mark("register", 2.85);
     timeline.call(
       () => {
         motion.current.drift = reducedRef.current ? 0 : 1;
       },
       [],
-      4.7,
+      3.15,
     );
-    timeline.to({}, { duration: 0.45 }, 4.75);
-    safetyRef.current = window.setTimeout(() => finish(), 7000);
+    timeline.to({}, { duration: 0.2 }, 3.15);
+    safetyRef.current = window.setTimeout(() => finish(), 5200);
 
     return () => {
       timeline.kill();
@@ -237,5 +263,5 @@ export function useIntroController(reducedMotion: boolean) {
     finish({ cut: true });
   }, [reducedMotion, finish]);
 
-  return { phase, overlay, motion, skip, instant: cut };
+  return { phase, overlay: false, motion, skip, instant: cut };
 }

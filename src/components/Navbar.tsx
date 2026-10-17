@@ -8,12 +8,12 @@ type NavbarProps = {
 };
 
 const field = [
-  { href: "#top", id: "top", label: "Access Gate" },
+  { href: "#top", id: "top", label: "Gate" },
   ...navLinks.map((link) => ({ href: link.href, id: link.href.slice(1), label: link.label })),
-  { href: "#register", id: "register", label: "Final Access" },
+  { href: "#partners", id: "partners", label: "Partners" },
 ];
 
-function BrandLogo({ src, alt }: { src: string; alt: string }) {
+export function BrandLogo({ src, alt }: { src: string; alt: string }) {
   const [failed, setFailed] = useState(false);
   if (failed) {
     return <span className="max-w-24 font-mono text-[10px] leading-tight tracking-wide text-ink">{alt}</span>;
@@ -68,10 +68,6 @@ export function Navbar({ settled, reducedMotion }: NavbarProps) {
         <BrandLogo src={logos.kl} alt="KL University" />
         <BrandLogo src={logos.gdg} alt="Google Developer Groups" />
         <BrandLogo src={logos.whh} alt="White Hat Hackers" />
-        <span className="brand-name">
-          <span className="block font-display text-sm text-ink md:text-base">DEAD NOCTIS</span>
-          <span className="mt-1 block font-mono text-[10px] tracking-[0.18em] text-muted">CTF — SEASON 01</span>
-        </span>
       </a>
       <nav className="field-index" aria-label="Sections">
         <ol>

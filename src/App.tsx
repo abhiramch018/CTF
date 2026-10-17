@@ -1,5 +1,4 @@
 import { CyberCursor } from "./components/CyberCursor.tsx";
-import { IntroSequence } from "./components/IntroSequence.tsx";
 import { LandingPage } from "./components/LandingPage.tsx";
 import { useIntroController } from "./hooks/useIntroController.ts";
 import { usePrefersReducedMotion } from "./hooks/usePrefersReducedMotion.ts";
@@ -10,20 +9,15 @@ export default function App() {
 
   return (
     <>
-      {intro.overlay ? null : (
-        <a className="skip-link" href="#main">
-          Skip to content
-        </a>
-      )}
-      {intro.overlay ? (
-        <IntroSequence phase={intro.phase} reducedMotion={reducedMotion} onSkip={intro.skip} />
-      ) : null}
+      <a className="skip-link" href="#main">
+        Skip to content
+      </a>
       <LandingPage
         motion={intro.motion}
         phase={intro.phase}
-        locked={intro.overlay}
         reducedMotion={reducedMotion}
         instant={intro.instant}
+        onSkip={intro.skip}
       />
       <CyberCursor reducedMotion={reducedMotion} />
     </>
