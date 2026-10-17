@@ -48,26 +48,26 @@ export function FirewallGate({
     <group position={[0, 0, z]}>
       <mesh position={[-1.7, 1.7, 0]}>
         <boxGeometry args={[0.35, 3.4, 0.4]} />
-        <meshStandardMaterial color="#0B1240" roughness={0.7} />
+        <meshStandardMaterial color="#02160f" roughness={0.7} />
       </mesh>
       <mesh position={[1.7, 1.7, 0]}>
         <boxGeometry args={[0.35, 3.4, 0.4]} />
-        <meshStandardMaterial color="#0B1240" roughness={0.7} />
+        <meshStandardMaterial color="#02160f" roughness={0.7} />
       </mesh>
       <mesh position={[0, 3.5, 0]}>
         <boxGeometry args={[3.8, 0.32, 0.4]} />
-        <meshStandardMaterial color="#17114A" emissive="#A855F7" emissiveIntensity={0.35} />
+        <meshStandardMaterial color="#053D24" emissive="#00F07A" emissiveIntensity={0.35} />
       </mesh>
       <group ref={left} position={[-1.05, 0, 0]}>
         <mesh position={[0, 1.65, 0]}>
           <boxGeometry args={[1.05, 3.1, 0.18]} />
-          <meshStandardMaterial color="#05030A" emissive="#7C3AED" emissiveIntensity={0.2} />
+          <meshStandardMaterial color="#010604" emissive="#00B85C" emissiveIntensity={0.2} />
         </mesh>
       </group>
       <group ref={right} position={[1.05, 0, 0]}>
         <mesh position={[0, 1.65, 0]}>
           <boxGeometry args={[1.05, 3.1, 0.18]} />
-          <meshStandardMaterial color="#05030A" emissive="#7C3AED" emissiveIntensity={0.2} />
+          <meshStandardMaterial color="#010604" emissive="#00B85C" emissiveIntensity={0.2} />
         </mesh>
       </group>
     </group>
@@ -127,7 +127,7 @@ export function VoxelFragments({
   return (
     <instancedMesh ref={ref} args={[undefined, undefined, count]}>
       <boxGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial color="#17114A" emissive="#A855F7" emissiveIntensity={1.1} roughness={0.45} toneMapped={false} />
+      <meshStandardMaterial color="#053D24" emissive="#52FF9A" emissiveIntensity={1.1} roughness={0.45} toneMapped={false} />
     </instancedMesh>
   );
 }
@@ -191,7 +191,7 @@ export function PacketRoutes({
       <bufferGeometry>
         <bufferAttribute attach="attributes-position" args={[positions, 3]} />
       </bufferGeometry>
-      <pointsMaterial color="#40BFFF" size={0.055} transparent opacity={0.9} depthWrite={false} toneMapped={false} sizeAttenuation />
+      <pointsMaterial color="#00F07A" size={0.055} transparent opacity={0.9} depthWrite={false} toneMapped={false} sizeAttenuation />
     </points>
   );
 }
@@ -210,7 +210,7 @@ function WireKey({ position, reducedMotion }: { position: [number, number, numbe
   return (
     <group ref={ref} position={position}>
       <lineSegments geometry={geometry}>
-        <lineBasicMaterial color="#40BFFF" toneMapped={false} />
+        <lineBasicMaterial color="#B5FFE0" toneMapped={false} />
       </lineSegments>
     </group>
   );
@@ -253,13 +253,13 @@ export function SignalLife({
       <group ref={droneA} position={[-4.2, 3.15, 0.6]}>
         <mesh>
           <boxGeometry args={[0.28, 0.08, 0.28]} />
-          <meshStandardMaterial color="#0B1240" emissive="#40BFFF" emissiveIntensity={0.8} toneMapped={false} />
+          <meshStandardMaterial color="#02160f" emissive="#00F07A" emissiveIntensity={0.8} toneMapped={false} />
         </mesh>
       </group>
       <group ref={droneB} position={[4.1, 3.4, -6]}>
         <mesh>
           <boxGeometry args={[0.24, 0.08, 0.24]} />
-          <meshStandardMaterial color="#0B1240" emissive="#A855F7" emissiveIntensity={0.7} toneMapped={false} />
+          <meshStandardMaterial color="#02160f" emissive="#52FF9A" emissiveIntensity={0.7} toneMapped={false} />
         </mesh>
       </group>
       {keys.map((position) => (
@@ -271,11 +271,11 @@ export function SignalLife({
       ))}
       <mesh position={[-0.35, 3.4, 1.15]} rotation={[0.15, 0, 0]}>
         <planeGeometry args={[0.55, 5.5]} />
-        <meshBasicMaterial color="#F02CB7" transparent opacity={0.1} depthWrite={false} toneMapped={false} />
+        <meshBasicMaterial color="#00F07A" transparent opacity={0.1} depthWrite={false} toneMapped={false} />
       </mesh>
       <mesh position={[1.4, 2.6, -16]} rotation={[0.4, 0.2, 0]}>
         <planeGeometry args={[0.4, 4.2]} />
-        <meshBasicMaterial color="#A855F7" transparent opacity={0.07} depthWrite={false} toneMapped={false} />
+        <meshBasicMaterial color="#52FF9A" transparent opacity={0.07} depthWrite={false} toneMapped={false} />
       </mesh>
       <HoloFlag position={[-3.15, 1.7, 3.35]} reducedMotion={reducedMotion} motion={motion} />
       <HoloFlag position={[-2.1, 2.35, -27.2]} reducedMotion={reducedMotion} motion={motion} />
@@ -307,7 +307,7 @@ function HoloFlag({
       <group ref={cloth} position={[0.22, 0.15, 0]}>
         <mesh>
           <planeGeometry args={[0.46, 0.28]} />
-          <meshBasicMaterial color="#F02CB7" transparent opacity={0.72} depthWrite={false} toneMapped={false} side={2} />
+          <meshBasicMaterial color="#00F07A" transparent opacity={0.72} depthWrite={false} toneMapped={false} side={2} />
         </mesh>
       </group>
     </group>
